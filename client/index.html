@@ -63,7 +63,7 @@
                         Upload query document
                     </label>
                 </div>
-                <button class="ui button" type="submit">Submit</button>
+                <button class="ui primary button" type="submit">Submit</button>
             </form>
         </template>
         <template id="template-network">
@@ -344,6 +344,25 @@
                 boxForm.appendChild(cloneLoader);
             }
 
+            /* わかち書き文章の取得関数 */
+            async function getWakachiSentence(sentence)
+            {
+                // バックエンド側のパス
+                const pathServerMecab = "http://localhost:4000/";
+
+                const response = await fetch(pathServerMecab, {
+                    method: 'POST',
+                    headers: {
+                    'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ text: sentence }),
+                });
+
+                const  responseData    = await response.json();
+                const  wakachiSentence = responseData.wakachiSentence;
+                return wakachiSentence;
+            }
+
             /* フォームデータの処理関数 */
             async function handleFormSubmit(event)
             {
@@ -360,7 +379,7 @@
 
                 try
                 {
-                    // フォームデータ
+                    // サーバー側に送信するクエリ文書
                     const uploadDocument = {
                         name       : `1 ${fileContent.name}`,
                         normalText : '',
@@ -376,8 +395,9 @@
                         reader.onerror = error => reject(error);
                     });
 
-                    uploadDocument.normalText  = "ダイエット効果日本人0割生成注意点";
-                    uploadDocument.wakachiText = uploadedText;
+                    // クエリ文書の内容を設定
+                    uploadDocument.normalText  = uploadedText;
+                    uploadDocument.wakachiText = await getWakachiSentence(uploadedText);
 
                     // API 通信を開始
                     generateLoader();
