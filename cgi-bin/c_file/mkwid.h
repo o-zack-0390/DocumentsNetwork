@@ -1,0 +1,1 @@
+void	mkwid(char **argv);

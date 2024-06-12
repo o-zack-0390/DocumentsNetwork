@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html lang="ja">
+<!-- ==== Begin Header ==== -->
+    <head>
+        <meta charset="utf-8">
+        <title>k-saito-brousing</title>
+        <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.3/dist/jquery.min.js"></script>
+        <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/fomantic-ui@2.9.2/dist/semantic.min.css">
+<!-- ==== Begin Style ==== -->
+        <style>
+            .container-svg {
+                width: 1700px;
+                height: 850px;
+            }
+            .circle {
+                opacity: 1;
+                cursor: pointer;
+            }
+        </style>
+<!-- ==== End Style ==== -->
+    </head>
+<!-- ==== End Header ==== -->
+
+<!-- ==== Begin Body ==== -->
+    <body>
+<!-- ==== Begin Box ==== -->
+        <main>
+            <section id="box-form">
+                <!-- document form -->
+            </section>
+            <section id="box-divider-1">
+                <!-- margin -->
+            </section>
+            <section id="box-network">
+                <!-- network -->
+            </section>
+            <section id="box-divider-2">
+                <!-- margin -->
+            </section>
+            <section id="box-document-detail">
+                <!-- document details -->
+            </section>
+        </main>
+<!-- ==== End Box ==== -->
+
+<!-- ==== Begin Template ==== -->
+        <template id="template-divider">
+            <div class="ui large hidden divider"></div>
+            <h4 id="divider-header" class="ui massive horizontal divider header">
+                <i class=""></i>
+                <!-- Insert text -->
+            </h4>
+            <div class="ui large hidden divider"></div>
+        </template>
+        <template id="template-form">
+            <form class="ui form" onsubmit="handleFormSubmit(event)">
+                <div class="field">
+                    <input type="file" id="template-invisible-upload" class="ui invisible file input">
+                    <label for="template-invisible-upload" class="ui olive icon button">
+                        <i class="file icon"></i>
+                        Upload query document
+                    </label>
+                </div>
+                <button class="ui button" type="submit">Submit</button>
+            </form>
+        </template>
+        <template id="template-network">
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                xmlns:xlink="http://www.w3.org/1999/xlink"
+                class="container-svg"
+            >
+            </svg>
+        </template>
+        <template id="template-document-detail">
+            <div class="ui two column doubling stackable grid container">
+                <div id="template-query-column" class="column">
+                    <div id="template-query-document" class="ui raised segment">
+                        <a class="ui red ribbon label">
+                            <!-- Insert document name -->
+                        </a>
+                        <div class="ui hidden divider"></div>
+                        <p>
+                            <!-- Insert document context -->
+                        </p>
+                    </div>
+                </div>
+                <div id="template-similar-column" class="column">
+                    <div id="template-similar-document" class="ui segment">
+                        <a class="ui orange ribbon label">
+                            <!-- Insert document name -->
+                        </a>
+                        <div class="ui hidden divider"></div>
+                        <p>
+                            <!-- Insert document context -->
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </template>
+        <template id="template-loader">
+            <div class="ui hidden divider"></div>
+            <div class="ui large active teal text loader">Generating Network</div>
+        </template>
+<!-- ==== End Template ==== -->
+
+<!-- ==== Begin Script ==== -->
+        <script>
+
+            // 文書データ
+            const documents = [];
+
+            /* KNNデータの取得関数 */
+            async function getKkData(uploadDocument)
+            {
+                // バックエンド側のパス
+                const pathKkData = "http://localhost/cgi-bin/main.cgi";
+
+                try {
+                    const response = await fetch(pathKkData, {
+                        method : "POST",
+                        mode   : "cors",
+                        headers: { "Content-Type": "text/plain" },
+                        body   : `{\"name\":\"${uploadDocument.name}\",\"normalText\":\"${uploadDocument.normalText}\",\"wakachiText\":\"${uploadDocument.wakachiText}\"}`,
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        generateNetwork(data); // ネットワーク図を生成
+                    })
+                }
+                catch (error) {
+                    console.error('Fetch error:', error);
+                }
+            }
+
+            /* ネットワーク図の生成関数 */
+            function generateNetwork(knnDatas)
+            {
+                const attributeEdges = knnDatas.edges;
+                const attributeNodes = knnDatas.nodes;
+                generateEdges(attributeEdges);
+                generateNodes(attributeNodes);
+            }
+
+            /* クエリ文書の内容を DOM に挿入するメソッド */
+            const generateQueryDocumentDetail = (docTitle, docText) =>
+            {
+                // ブロック id
+                const templateDocumentDetailId = "#template-document-detail";
+                const templateQueryColumn      = "#template-query-column";
+                const templateQueryDocumentId  = "#template-query-document";
+                const boxDocumentDetailId      = "#box-document-detail";
+
+                // タイトルと内容を挿入するテンプレートを参照
+                const templateDocumentDetail = document.querySelector(templateDocumentDetailId);
+                const templateQueryDocument  = templateDocumentDetail.content.querySelector(templateQueryDocumentId);
+                
+                // 複製を生成
+                const cloneDocumentDetail = document.importNode(templateDocumentDetail.content, true);
+                const cloneQueryDocument  = document.importNode(templateQueryDocument, true);
+
+                // 文書内容を設定
+                cloneQueryDocument.querySelector("a").innerHTML = docTitle;
+                cloneQueryDocument.querySelector("p").innerHTML = docText;
+                cloneDocumentDetail.querySelector(templateQueryColumn).innerHTML = '';
+                cloneDocumentDetail.querySelector(templateQueryColumn).appendChild(cloneQueryDocument);
+
+                // ボックスに挿入
+                const boxDocumentDetail = document.querySelector(boxDocumentDetailId);
+                boxDocumentDetail.innerHTML = '';
+                boxDocumentDetail.appendChild(cloneDocumentDetail);
+            }
+
+            /* 類似文書の内容を DOM に挿入するメソッド */
+            const generateSimilarDocumentDetail = (docName) =>
+            {
+                // ブロック id
+                const templateDocumentDetailId  = "#template-document-detail";
+                const templateSimilarColumn     = "#template-similar-column";
+                const templateSimilarDocumentId = "#template-similar-document";
+                const boxDocumentDetailId       = "#box-document-detail";
+
+                // タイトルと内容を挿入するテンプレートを参照
+                const templateDocumentDetail  = document.querySelector(templateDocumentDetailId).content.cloneNode(true);
+                const templateSimilarDocument = templateDocumentDetail.querySelector(templateSimilarDocumentId);
+                
+                // 複製を生成
+                const cloneSimilarDocument = document.importNode(templateSimilarDocument, true);
+
+                // 文書データを取得
+                const targetDoc = documents.find((doc) => doc.name === docName);
+
+                // 文書内容を設定
+                cloneSimilarDocument.querySelector("a").innerHTML = `${targetDoc.keyword} ${targetDoc.category} ${targetDoc.name}`;
+                cloneSimilarDocument.querySelector("p").innerHTML = targetDoc.text;
+
+                // ボックスに挿入
+                const boxDocumentDetail = document.querySelector(boxDocumentDetailId);
+                boxDocumentDetail.querySelector(templateSimilarColumn).innerHTML = '';
+                boxDocumentDetail.querySelector(templateSimilarColumn).appendChild(cloneSimilarDocument);
+            }
+
+            /* エッジの生成関数 */
+            function generateEdges(attributesEdges)
+            {
+                // ネットワーク図を初期化
+                const boxNetwork = document.querySelector("#box-network");
+                boxNetwork.innerHTML = '';
+
+                // svg のテンプレートを参照
+                const templateNetwork = document.querySelector("#template-network");
+                const templateSVG = templateNetwork.content.querySelector("svg");
+                const cloneSVG = document.importNode(templateSVG, true);
+
+                // エッジを追加するメソッド
+                const addEdge = (attributeEdge) =>
+                {
+                    // <line> を生成して属性を設定
+                    const edge = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                    edge.setAttribute("x1", attributeEdge.x1);
+                    edge.setAttribute("y1", attributeEdge.y1);
+                    edge.setAttribute("x2", attributeEdge.x2);
+                    edge.setAttribute("y2", attributeEdge.y2);
+                    edge.setAttribute("stroke", "#999999");
+                    edge.setAttribute("stroke-opacity", "1");
+                    edge.setAttribute("stroke-width", "2");
+
+                    // ボックスの子要素に <line> を追加
+                    cloneSVG.appendChild(edge);
+                };
+
+                // ボックスにエッジを追加
+                attributesEdges.forEach(attributeEdge =>
+                {
+                    addEdge(attributeEdge);
+                });
+
+                boxNetwork.appendChild(cloneSVG);
+            }
+
+            /* ノードの生成関数 */
+            function generateNodes(attributeNodes)
+            {
+                // エッジが描画された svg を参照
+                const boxNetwork = document.querySelector("#box-network");
+                const boxSVG     = boxNetwork.querySelector("svg");
+
+                // ノードを追加するメソッド
+                const addNode = (attributeNode) =>
+                {
+                    // 文書概要
+                    const docName    = attributeNode.fileName;
+                    const docKeyword = attributeNode.keyword;
+                    const docId      = attributeNode.id;
+                    const docText    = attributeNode.title;
+                    const docTitle   = `${docKeyword} ${docId} ${docName}`;
+
+                    // 文書データに追加
+                    documents.push({
+                        name    : docName,
+                        keyword : docKeyword,
+                        category: docId,
+                        text    : docText
+                    });
+
+                    // <a> タグを複製して属性を追加
+                    const node = document.createElementNS("http://www.w3.org/2000/svg", "a");
+                    node.setAttribute("href", "");
+
+                    // <circle> タグを複製して属性を追加
+                    const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                    circle.setAttribute("cx", attributeNode.cx);
+                    circle.setAttribute("cy", attributeNode.cy);
+                    circle.setAttribute("r", attributeNode.r);
+                    circle.setAttribute("fill", attributeNode.color);
+                    circle.setAttribute("onclick", `generateSimilarDocumentDetail("${docName}")`);
+                    circle.classList.add("circle");
+
+                    // <title> タグを作成してツールチップ用のテキストを設定
+                    const title = document.createElementNS("http://www.w3.org/2000/svg", "title");
+                    title.textContent = `${docTitle} ${docText}`;
+
+                    // <circle> の子要素に <title> を挿入
+                    circle.appendChild(title);
+
+                    // <a> の子要素に <circle> を挿入
+                    node.appendChild(circle);
+
+                    // ボックスの子要素に <a> を追加
+                    boxSVG.appendChild(circle);
+                };
+
+                // 文書詳細画面にクエリ文書を追加
+                console.log(attributeNodes.length);
+                generateQueryDocumentDetail(
+                    `${attributeNodes[0].keyword} ${attributeNodes[0].id} ${attributeNodes[0].fileName}`,
+                    attributeNodes[0].title
+                );
+
+                // ボックスにノードを追加
+                attributeNodes.forEach(attributeNode => {
+                    addNode(attributeNode);
+                });
+            }
+
+            /* 境界線の生成関数 */
+            function generateDivider()
+            {
+                const templateDivider = document.querySelector("#template-divider");
+                const cloneDivider1   = document.importNode(templateDivider.content, true);
+                const cloneDivider2   = document.importNode(templateDivider.content, true);
+                const boxDivider1     = document.querySelector("#box-divider-1");
+                const boxDivider2     = document.querySelector("#box-divider-2");
+                boxDivider1.appendChild(cloneDivider1);
+                boxDivider2.appendChild(cloneDivider2);
+                boxDivider1.querySelector("i").classList.add("connectdevelop", "icon");
+                boxDivider2.querySelector("i").classList.add("file", "alternate", "outline", "icon");
+                boxDivider1.querySelector("#divider-header").childNodes[2].textContent = "Network";
+                boxDivider2.querySelector("#divider-header").childNodes[2].textContent = "Description";
+            }
+
+            /* フォームの生成関数 */
+            function generateDocumentForm()
+            {
+                const templateForm = document.querySelector("#template-form");
+                const cloneForm    = document.importNode(templateForm.content, true);
+                const boxForm      = document.querySelector("#box-form");
+                boxForm.innerHTML  = '';
+                boxForm.appendChild(cloneForm);
+            }
+
+            /* ローダーの生成関数 */
+            function generateLoader()
+            {
+                // ローダーを複製
+                const templateLoader = document.querySelector("#template-loader");
+                const cloneLoader    = document.importNode(templateLoader.content, true);
+
+                // フォームを削除してからローダーを追加
+                const boxForm = document.querySelector("#box-form");
+                boxForm.innerHTML = '';
+                boxForm.appendChild(cloneLoader);
+            }
+
+            /* フォームデータの処理関数 */
+            async function handleFormSubmit(event)
+            {
+                // リダイレクトを無効化
+                event.preventDefault();
+
+                const templateInvisibleUpload = document.querySelector('#template-invisible-upload');
+                const fileContent = templateInvisibleUpload.files[0];
+
+                if (!fileContent) {
+                    alert('文書ファイルを選択してください。');
+                    return;
+                }
+
+                try
+                {
+                    // フォームデータ
+                    const uploadDocument = {
+                        name       : `1 ${fileContent.name}`,
+                        normalText : '',
+                        wakachiText: ''
+                    };
+
+                    const reader = new FileReader();
+                    reader.readAsText(fileContent, 'UTF-8');
+
+                    // ファイルのロードが完了するまで待機
+                    const uploadedText = await new Promise((resolve, reject) => {
+                        reader.onload = () => resolve(reader.result);
+                        reader.onerror = error => reject(error);
+                    });
+
+                    uploadDocument.normalText  = "ダイエット効果日本人0割生成注意点";
+                    uploadDocument.wakachiText = uploadedText;
+
+                    // API 通信を開始
+                    generateLoader();
+                    await getKkData(uploadDocument);
+                    generateDocumentForm();
+                }
+                catch (error)
+                {
+                    console.error('Error reading file:', error);
+                    return;
+                }
+            }
+
+            document.addEventListener("DOMContentLoaded", () =>
+            {
+                generateDivider();
+                generateDocumentForm();
+            });
+        </script>
+<!-- ==== End Script ==== -->
+    </body>
+<!-- ==== End Body ==== -->
+</html>

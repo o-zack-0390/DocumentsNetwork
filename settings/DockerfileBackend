@@ -1,0 +1,62 @@
+FROM ubuntu:latest
+
+# パッケージのインストール
+RUN apt-get update && apt-get install -y \
+    apache2 \
+    apache2-utils \
+    apache2-bin \
+    gcc \
+    cmake \
+    make \
+    curl \
+    libssl-dev \
+    libcurl4-openssl-dev \
+    --fix-missing && \
+    rm -rf /var/lib/apt/lists/*
+
+# ApacheのCGIモジュールを有効化
+RUN a2enmod cgi
+
+# Apache設定ファイルを複製
+COPY ./settings/serve-cgi-bin.conf /etc/apache2/conf-available/serve-cgi-bin.conf
+
+# 設定を有効化
+RUN a2enconf serve-cgi-bin
+
+# cjsonライブラリのインストール
+RUN mkdir -p /usr/src/cjson && \
+    cd /usr/src/cjson && \
+    curl -LO https://github.com/DaveGamble/cJSON/archive/v1.7.15.tar.gz && \
+    tar -xzvf v1.7.15.tar.gz && \
+    cd cJSON-1.7.15 && \
+    mkdir build && cd build && \
+    cmake .. && \
+    make && \
+    make install && \
+    ldconfig && \
+    rm -rf /usr/src/cjson
+
+# バックエンドファイルを複製
+COPY ./cgi-bin /usr/lib/cgi-bin/
+
+# テキストファイルの権限を変更
+RUN chmod -R 777 /usr/lib/cgi-bin/data && \
+    chmod -R 777 /usr/lib/cgi-bin/result
+
+# C ファイルのコンパイル
+RUN gcc -I/usr/local/include/cjson -L/usr/local/lib \
+    /usr/lib/cgi-bin/c_file/main.c \
+    /usr/lib/cgi-bin/c_file/mkwid.c \
+    /usr/lib/cgi-bin/c_file/mklbl.c \
+    /usr/lib/cgi-bin/c_file/nnsk5.c \
+    /usr/lib/cgi-bin/c_file/knn.c \
+    /usr/lib/cgi-bin/c_file/kk.c \
+    -o /usr/lib/cgi-bin/c_file/main.cgi -lcjson -lm && \
+    chmod +x /usr/lib/cgi-bin/c_file/main.cgi && \
+    rm /usr/lib/cgi-bin/c_file/main.c
+
+# ポート 80 を公開
+EXPOSE 80
+
+# Apache を起動
+CMD ["apachectl", "-D", "FOREGROUND"]

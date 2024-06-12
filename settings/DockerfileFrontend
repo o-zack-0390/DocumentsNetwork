@@ -1,0 +1,13 @@
+# ベースイメージの指定(Long Term Support を使用)
+FROM node:lts
+
+# Dockerコンテナに入ったときの作業ディレクトリ
+WORKDIR /projects/frontend
+
+COPY ./frontend .
+
+# 依存関係のインストール
+RUN npm install
+
+# アプリケーションの起動
+CMD ["npm", "start"]
