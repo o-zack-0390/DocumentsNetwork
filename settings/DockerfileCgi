@@ -37,23 +37,23 @@ RUN mkdir -p /usr/src/cjson && \
     rm -rf /usr/src/cjson
 
 # バックエンドファイルを複製
-COPY ./cgi-bin /usr/lib/cgi-bin/
+COPY ./server-cgi-bin /usr/lib/server-cgi-bin/
 
 # テキストファイルの権限を変更
-RUN chmod -R 777 /usr/lib/cgi-bin/data && \
-    chmod -R 777 /usr/lib/cgi-bin/result
+RUN chmod -R 777 /usr/lib/server-cgi-bin/data && \
+    chmod -R 777 /usr/lib/server-cgi-bin/result
 
 # C ファイルのコンパイル
 RUN gcc -I/usr/local/include/cjson -L/usr/local/lib \
-    /usr/lib/cgi-bin/c_file/main.c \
-    /usr/lib/cgi-bin/c_file/mkwid.c \
-    /usr/lib/cgi-bin/c_file/mklbl.c \
-    /usr/lib/cgi-bin/c_file/nnsk5.c \
-    /usr/lib/cgi-bin/c_file/knn.c \
-    /usr/lib/cgi-bin/c_file/kk.c \
-    -o /usr/lib/cgi-bin/c_file/main.cgi -lcjson -lm && \
-    chmod +x /usr/lib/cgi-bin/c_file/main.cgi && \
-    rm /usr/lib/cgi-bin/c_file/main.c
+    /usr/lib/server-cgi-bin/c_file/main.c \
+    /usr/lib/server-cgi-bin/c_file/mkwid.c \
+    /usr/lib/server-cgi-bin/c_file/mklbl.c \
+    /usr/lib/server-cgi-bin/c_file/nnsk5.c \
+    /usr/lib/server-cgi-bin/c_file/knn.c \
+    /usr/lib/server-cgi-bin/c_file/kk.c \
+    -o /usr/lib/server-cgi-bin/c_file/main.cgi -lcjson -lm && \
+    chmod +x /usr/lib/server-cgi-bin/c_file/main.cgi && \
+    rm /usr/lib/server-cgi-bin/c_file/main.c
 
 # ポート 80 を公開
 EXPOSE 80

@@ -2,9 +2,9 @@
 FROM node:lts
 
 # Dockerコンテナに入ったときの作業ディレクトリ
-WORKDIR /projects/frontend
+WORKDIR /projects/client
 
-COPY ./frontend .
+COPY ./client .
 
 # 依存関係のインストール
 RUN npm install
