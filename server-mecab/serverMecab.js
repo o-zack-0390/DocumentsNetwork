@@ -1,8 +1,23 @@
 import express from 'express';
 import MeCab from 'mecab-async';
 
-/* クライアント側から送信された文章を「わかち書き」してレスポンスとして返却するサーバー */
+/* ==== Begin Function ==== */
+function parseAsync(text)
+{
+    /* わかち書き文章を生成する関数 */
+    return new Promise((resolve, reject) => {
+        mecab.wakachi(text, (err, result) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(result);
+            }
+        });
+    });
+}
+/* ==== End Function ==== */
 
+/* ==== Begin Server Setting ==== */
 const app           = express();
 const mecab         = new MeCab();
 const port          = process.env.PORT || 4000;
@@ -19,19 +34,9 @@ app.use((req, res, next) => {
     }
     next();
 });
+/* ==== End Server Setting ==== */
 
-function parseAsync(text) {
-    return new Promise((resolve, reject) => {
-        mecab.wakachi(text, (err, result) => {
-            if (err) {
-                reject(err);
-            } else {
-                resolve(result);
-            }
-        });
-    });
-}
-
+/* ==== Begin POST Server ==== */
 app.post('/', async (req, res) => {
     const text = req.body.text;
     try {
@@ -42,7 +47,10 @@ app.post('/', async (req, res) => {
         res.status(500).send('わかち書き中にエラーが発生しました');
     }
 });
+/* ==== End POST Server ==== */
 
+/* ==== Begin PORT Setting ==== */
 app.listen(port, () => {
     console.log(`Express server listening on port ${port}`);
 });
+/* ==== End PORT Setting ==== */
