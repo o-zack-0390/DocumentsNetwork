@@ -1,21 +1,33 @@
 version: "3.9"
 services:
-  frontend:
-      container_name: frontend
+  client:
+      container_name: client
       build:
         context: .
-        dockerfile: ./settings/DockerfileFrontend
+        dockerfile: ./settings/DockerfileClient
       volumes:
       - type: bind
-        source: ./frontend
-        target: /frontend
+        source: ./client
+        target: /client
       ports:
         - 3000:3000
       tty: true
-  #backend:
-  #  container_name: backend
+  mecab:
+      container_name: mecab
+      build:
+        context: .
+        dockerfile: ./settings/DockerfileMeCab
+      volumes:
+      - type: bind
+        source: ./server-mecab
+        target: /server-mecab
+      ports:
+        - 4000:4000
+      tty: true
+  #cgi:
+  #  container_name: cgi
   #  build:
   #    context: .
-  #    dockerfile: ./settings/DockerfileBackend
+  #    dockerfile: ./settings/DockerfileCgi
   #  ports:
   #    - 80:80
