@@ -1,0 +1,16 @@
+{
+  "name": "server-mecab",
+  "version": "1.0.0",
+  "description": "",
+  "main": "serverMecab.js",
+  "type": "module",
+  "scripts": {
+    "start": "node serverMecab.js"
+  },
+  "dependencies": {
+    "express": "^4.17.1",
+    "@enjoyjs/node-mecab": "^0.5.0"
+  },
+  "author": "",
+  "license": "ISC"
+}

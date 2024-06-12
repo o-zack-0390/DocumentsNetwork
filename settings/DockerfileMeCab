@@ -1,0 +1,21 @@
+# ベースイメージの指定(Long Term Support を使用)
+FROM node:lts
+
+# MeCabのインストール
+RUN apt-get update \
+  && apt-get install -y \
+    mecab \
+    libmecab-dev \
+    mecab-ipadic-utf8 \
+  && rm -rf /var/lib/apt/lists/*
+
+# Dockerコンテナに入ったときの作業ディレクトリ
+WORKDIR /projects/server-mecab
+
+COPY ./server-mecab .
+
+# 依存関係のインストール
+RUN npm install
+
+# アプリケーションの起動
+CMD ["npm", "start"]
