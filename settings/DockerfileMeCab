@@ -13,7 +13,7 @@ RUN apt-get update \
 # Dockerコンテナに入ったときの作業ディレクトリ
 WORKDIR /projects/server-mecab
 
-COPY ./server-mecab .
+COPY ./server-mecab/* .
 
 # 依存関係のインストール
 RUN npm install
