@@ -1,0 +1,6 @@
+コンテナに mecab-ipadic-neologd をインストールするコマンド
+
+docker exec -it mecab /bin/bash
+cd mecab-ipadic-neologd
+./bin/install-mecab-ipadic-neologd -n
+yes
