@@ -17,9 +17,14 @@ function parseAsync(text)
 }
 /* ==== End Function ==== */
 
+/* ==== Begin MeCab Setting ==== */
+const mecab   = new MeCab();
+const dicDir  = "/usr/lib/x86_64-linux-gnu/mecab/dic/mecab-ipadic-neologd";
+mecab.command = `mecab -d ${dicDir}`;
+/* ==== End MeCab Setting ==== */
+
 /* ==== Begin Server Setting ==== */
 const app           = express();
-const mecab         = new MeCab();
 const port          = process.env.PORT || 4000;
 const allowedOrigin = process.env.ALLOWED_ORIGIN || 'http://localhost:3000';
 
