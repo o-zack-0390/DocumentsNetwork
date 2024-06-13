@@ -4,3 +4,6 @@ docker exec -it mecab /bin/bash
 cd mecab-ipadic-neologd
 ./bin/install-mecab-ipadic-neologd -n
 yes
+
+
+参考文献 : https://github.com/neologd/mecab-ipadic-neologd/blob/master/README.ja.md
