@@ -4,6 +4,7 @@ FROM node:lts
 # MeCabのインストール
 RUN apt-get update \
   && apt-get install -y \
+    sudo \
     mecab \
     libmecab-dev \
     mecab-ipadic-utf8 \
