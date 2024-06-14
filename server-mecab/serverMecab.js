@@ -2,21 +2,24 @@ import express from 'express';
 import MeCab from 'mecab-async';
 
 /* ==== Begin Function ==== */
-function preprocessing(text)
-{
+function preprocessing(text) {
     /*
         文章を以下の形式に整形する関数
         ・ 数値を 0 に統一
         ・ 「,」を「、」に置換
         ・ 「\t」を削除
+        ・ 「\n」を削除
+        ・ 空白を削除（半角および全角）
         ・ アルファベットを小文字に統一
         ・ 記号を削除
     */
-    const punctuation      = `!"#$%&'()*+,-./:;<=>?@[\\]^_{|}~「」〔〕“”〈〉『』【】＆＊・（）＄＃＠。、？！｀＋￥％■※`;
+    const punctuation = `!"#$%&'()*+\\-./:;<=>?@[\\]^_{|}~「」〔〕“”〈〉『』【】＆＊・（）＄＃＠。、？！｀＋￥％■※`;
     const regexPunctuation = new RegExp(`[${punctuation}]`, 'g');
     text = text.replace(/[0-9]+/g, '0');
-    text = text.replace(/,/g, '');
+    text = text.replace(/,/g, '、');
     text = text.replace(/\t/g, '');
+    text = text.replace(/[\n\r]/g, '');
+    text = text.replace(/\s+/g, '');
     text = text.toLowerCase();
     text = text.replace(regexPunctuation, '');
     return text;
