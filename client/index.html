@@ -27,6 +27,9 @@
     <body>
 <!-- ==== Begin Box ==== -->
         <main>
+            <section id="box-loader">
+                <!-- loading icon -->
+            </section>
             <section id="box-form">
                 <!-- document form -->
             </section>
@@ -344,10 +347,11 @@
             function generateLoader()
             {
                 // ローダーを複製
+                const boxLoader      = document.querySelector("#box-loader");
                 const templateLoader = document.querySelector("#template-loader");
                 const cloneLoader    = document.importNode(templateLoader.content, true);
 
-                // ネットワーク・文書詳細画面・フォームを削除
+                // 描画しているネットワーク・文書詳細画面・フォームを削除
                 const boxNetwork            = document.querySelector("#box-network");
                 const boxDocumentDetail     = document.querySelector("#box-document-detail");
                 const boxForm               = document.querySelector("#box-form");
@@ -356,7 +360,15 @@
                 boxForm.innerHTML           = '';
 
                 // ローダーを追加
-                boxForm.appendChild(cloneLoader);
+                boxLoader.appendChild(cloneLoader);
+            }
+
+            /* ローダーの削除関数 */
+            function clearLoader()
+            {
+                // ローダーを削除
+                const boxLoader     = document.querySelector("#box-loader");
+                boxLoader.innerHTML = '';
             }
 
             /* わかち書き文章の取得関数 */
@@ -418,6 +430,7 @@
                     generateLoader();
                     await getKkData(uploadDocument);
                     generateDocumentForm();
+                    clearLoader();
                 }
                 catch (error)
                 {
