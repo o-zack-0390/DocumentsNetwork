@@ -6,26 +6,23 @@ function preprocessing(text)
 {
     /*
         文章を以下の形式に整形する関数
-        ・ 記号を' 'に置換
-        ・ アルファベットを小文字に統一
         ・ 数値を 0 に統一
         ・ 「,」を「、」に置換
         ・ 「\t」を削除
+        ・ アルファベットを小文字に統一
+        ・ 記号を削除
     */
-    const punctuation      = `!"#$%&'()*+,-./:;<=>?@[\\]^_\`{|}~`;
-    const translationTable = {};
-    for (const char of punctuation) {
-        translationTable[char] = ' ';
-    }
-    text = text.split('').map(char => translationTable[char] || char).join('');
-    text = text.toLowerCase();
+    const punctuation      = `!"#$%&'()*+,-./:;<=>?@[\\]^_{|}~「」〔〕“”〈〉『』【】＆＊・（）＄＃＠。、？！｀＋￥％■※`;
+    const regexPunctuation = new RegExp(`[${punctuation}]`, 'g');
     text = text.replace(/[0-9]+/g, '0');
-    text = text.replace(/,/g, '、');
+    text = text.replace(/,/g, '');
     text = text.replace(/\t/g, '');
+    text = text.toLowerCase();
+    text = text.replace(regexPunctuation, '');
     return text;
 }
 
-function parseAsync(text, mecab)
+function parseToWakachi(text, mecab)
 {
     /* わかち書き文章を生成する関数 */
     return new Promise((resolve, reject) => {
@@ -69,7 +66,7 @@ app.post('/', async (req, res) => {
     const text = req.body.text;
     try {
         let words = await preprocessing(text)
-            words = await parseAsync(words, mecab);
+            words = await parseToWakachi(words, mecab);
         res.json({ wakachiSentence: words.join(' ') });
     } catch (err) {
         console.error(err);
