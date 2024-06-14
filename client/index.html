@@ -124,6 +124,21 @@
             // 文書データ
             const documents = [];
 
+            // ボックス id
+            const boxLoaderId         = "#box-loader";
+            const boxDivider1Id       = "#box-divider-1";
+            const boxDivider2Id       = "#box-divider-2";
+            const boxFormId           = "#box-form";
+            const boxNetworkId        = "#box-network";
+            const boxDocumentDetailId = "#box-document-detail";
+
+            // テンプレート id
+            const templateLoaderId         = "#template-loader";
+            const templateDividerId        = "#template-divider-id";
+            const templateFormId           = "#template-form";
+            const templateNetworkId        = "#template-network";
+            const templateDocumentDetailId = "#template-document-detail";
+
             /* KNNデータの取得関数 */
             async function getKkData(uploadDocument)
             {
@@ -160,10 +175,8 @@
             const generateQueryDocumentDetail = (docTitle, docText) =>
             {
                 // ブロック id
-                const templateDocumentDetailId = "#template-document-detail";
-                const templateQueryColumn      = "#template-query-column";
-                const templateQueryDocumentId  = "#template-query-document";
-                const boxDocumentDetailId      = "#box-document-detail";
+                const templateQueryColumn     = "#template-query-column";
+                const templateQueryDocumentId = "#template-query-document";
 
                 // タイトルと内容を挿入するテンプレートを参照
                 const templateDocumentDetail = document.querySelector(templateDocumentDetailId);
@@ -189,10 +202,10 @@
             const generateSimilarDocumentDetail = (docName) =>
             {
                 // ブロック id
-                const templateDocumentDetailId  = "#template-document-detail";
+                const templateDocumentDetailId  = templateDocumentDetailId;
                 const templateSimilarColumn     = "#template-similar-column";
                 const templateSimilarDocumentId = "#template-similar-document";
-                const boxDocumentDetailId       = "#box-document-detail";
+                const boxDocumentDetailId       = boxDocumentDetailId;
 
                 // タイトルと内容を挿入するテンプレートを参照
                 const templateDocumentDetail  = document.querySelector(templateDocumentDetailId).content.cloneNode(true);
@@ -218,11 +231,11 @@
             function generateEdges(attributesEdges)
             {
                 // ネットワーク図を初期化
-                const boxNetwork = document.querySelector("#box-network");
+                const boxNetwork = document.querySelector(boxNetworkId);
                 boxNetwork.innerHTML = '';
 
                 // svg のテンプレートを参照
-                const templateNetwork = document.querySelector("#template-network");
+                const templateNetwork = document.querySelector(templateNetworkId);
                 const templateSVG = templateNetwork.content.querySelector("svg");
                 const cloneSVG = document.importNode(templateSVG, true);
 
@@ -256,7 +269,7 @@
             function generateNodes(attributeNodes)
             {
                 // エッジが描画された svg を参照
-                const boxNetwork = document.querySelector("#box-network");
+                const boxNetwork = document.querySelector(boxNetworkId);
                 const boxSVG     = boxNetwork.querySelector("svg");
 
                 // ノードを追加するメソッド
@@ -320,11 +333,11 @@
             /* 境界線の生成関数 */
             function generateDivider()
             {
-                const templateDivider = document.querySelector("#template-divider");
+                const templateDivider = document.querySelector(templateDividerId);
                 const cloneDivider1   = document.importNode(templateDivider.content, true);
                 const cloneDivider2   = document.importNode(templateDivider.content, true);
-                const boxDivider1     = document.querySelector("#box-divider-1");
-                const boxDivider2     = document.querySelector("#box-divider-2");
+                const boxDivider1     = document.querySelector(boxDivider1Id);
+                const boxDivider2     = document.querySelector(boxDivider2Id);
                 boxDivider1.appendChild(cloneDivider1);
                 boxDivider2.appendChild(cloneDivider2);
                 boxDivider1.querySelector("i").classList.add("connectdevelop", "icon");
@@ -336,9 +349,9 @@
             /* フォームの生成関数 */
             function generateDocumentForm()
             {
-                const templateForm = document.querySelector("#template-form");
+                const templateForm = document.querySelector(templateFormId);
                 const cloneForm    = document.importNode(templateForm.content, true);
-                const boxForm      = document.querySelector("#box-form");
+                const boxForm      = document.querySelector(boxFormId);
                 boxForm.innerHTML  = '';
                 boxForm.appendChild(cloneForm);
             }
@@ -347,14 +360,14 @@
             function generateLoader()
             {
                 // ローダーを複製
-                const boxLoader      = document.querySelector("#box-loader");
-                const templateLoader = document.querySelector("#template-loader");
+                const boxLoader      = document.querySelector(boxLoaderId);
+                const templateLoader = document.querySelector(templateLoaderId);
                 const cloneLoader    = document.importNode(templateLoader.content, true);
 
                 // 描画しているネットワーク・文書詳細画面・フォームを削除
-                const boxNetwork            = document.querySelector("#box-network");
-                const boxDocumentDetail     = document.querySelector("#box-document-detail");
-                const boxForm               = document.querySelector("#box-form");
+                const boxNetwork            = document.querySelector(boxNetworkId);
+                const boxDocumentDetail     = document.querySelector(boxDocumentDetailId);
+                const boxForm               = document.querySelector(boxFormId);
                 boxNetwork.innerHTML        = '';
                 boxDocumentDetail.innerHTML = '';
                 boxForm.innerHTML           = '';
@@ -367,7 +380,7 @@
             function clearLoader()
             {
                 // ローダーを削除
-                const boxLoader     = document.querySelector("#box-loader");
+                const boxLoader     = document.querySelector(boxLoaderId);
                 boxLoader.innerHTML = '';
             }
 
