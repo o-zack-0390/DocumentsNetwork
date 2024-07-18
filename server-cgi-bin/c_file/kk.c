@@ -1,10 +1,13 @@
 #include	<stdio.h>
 #include	<stdlib.h>
+#include	<string.h>
 #include	<math.h>
 #include	<time.h>
+#define MAX_LINE_LENGTH 1024
+#define MAX_TOKENS 100
 
-char	*kkVecN, **kkMatF; 
-int     kkDm, kkDn, kkDc, kkCntV[4], *kkNumV, **kkAdjM, *kkNumC, *kkVecC, *kkVecA, *kkkkVecT1, *kkkkVecT2, *kkVecS;
+char	*kkVecN, **kkMatF, **kkMatC; 
+int     kkDm, kkDn, kkDc, kkCntV[4], *kkNumV, **kkAdjM, *kkNumC, *kkVecC, *kkVecA, *kkVecT1, *kkVecT2, *kkVecS;
 double	**kkIn, *kkDecV, **kkMatW, **kkMatG, kkValE[2], **kkMatA, *kkVecB, *kkVecT;
 
 /* knn3000k100.txt をロード */
@@ -24,7 +27,7 @@ void    kkReadValue(char *fn1)
 	if((fp = fopen(fn1, "r")) == NULL)
 		fprintf(stderr, "Unknown File = %s\n", fn1);
 	
-	fscanf(fp, "%d %d %d", &kkDm, &k, &kkDc); 
+	fscanf(fp, "%d %d %d", &kkDm, &k, &kkDc);
 	kkNumV = (int *)     malloc(sizeof(int)*kkDm);
 	kkAdjM = (int **)    malloc(sizeof(int *)*kkDm);
 	kkNumC = (int *)     malloc(sizeof(int)*kkDm);
@@ -67,6 +70,7 @@ void kkReadUid(char *fn1)
 	kkVecN = (char *)  malloc(sizeof(char)*1000000);
 	kkVecC = (int *)   malloc(sizeof(int)*kkDm);
 	kkMatF = (char **) malloc(sizeof(char *)*kkDm);
+	kkMatC = (char **) malloc(sizeof(char *)*kkDm);
 	
 	for(i = j = 0; i < kkDm; i++)
 	{
@@ -217,9 +221,9 @@ void kkLLsolve(double **LL, double *B, double *X, int dim)//kkMatA, kkMatG[i], k
 
 void kkPrintValue(char *fn1, char *fn2)
 {
-	static char	*name[10] = {"#00ff00", "#ff0000", "#0000ff", "#ffff00", "#00ffff", "#ff00ff", "#ff7700", "#ff7777", "#ff77ff", "#000000"};
+	static char	*name[24] = {"#FF6E2B", "#99D02C", "#1C86AE", "#55A73B", "#DF4C93", "#CDE52F", "#2B78B0", "#32A65D", "#396BB0", "#FFCB1F", "#8561AB", "#2DA380", "#FC4E33", "#FF9913", "#FA344D", "#ED3B6B", "#FFF231", "#FC3633", "#1AA28E", "#A459AB", "#1FB3B3", "#5468AD", "#C75BB1", "#6A64AE"};
 	FILE	*fp;
-	int		i, j, k, x = 1700, y = 800;
+	int		i, j, k, x = 1600, y = 700;
 	double	v, w; 
 	
 //	ノードの座標の最大値と最小値(横軸)を求める
@@ -271,12 +275,96 @@ void kkPrintValue(char *fn1, char *fn2)
 	
 //	ノードの座標を生成
 	fp = fopen(fn2, "w");
-	fprintf(fp, "%d %s %f %f 12 %s\n", kkVecC[0], kkMatF[0], kkMatW[0][0], kkMatW[0][1], name[(kkVecC[0]-1)%10]); 
+	fprintf(fp, "%d %s %f %f 16 %s\n", kkVecC[0], kkMatF[0], kkMatW[0][0], kkMatW[0][1], name[(kkVecC[0]-1)%24]); 
 	for(i = 1; i < kkDm; i++)
 	{
-		fprintf(fp, "%d %s %f %f 6 %s\n", kkVecC[i], kkMatF[i], kkMatW[i][0], kkMatW[i][1], name[(kkVecC[i]-1)%10]);
+		fprintf(fp, "%d %s %f %f 8 %s\n", kkVecC[i], kkMatF[i], kkMatW[i][0], kkMatW[i][1], name[(kkVecC[i]-1)%24]);
 	}
 	fclose(fp); 
+}
+
+
+void kkPrintCategory(char *fn1, char *fn2) {
+    fprintf(stderr, "Start Category\n");
+    FILE *fp;
+    int i, j, k, numCategory;
+
+    char *categoryPrev = NULL;
+    char *categoryThis = NULL;
+    char *name[24] = {"#FF6E2B", "#99D02C", "#1C86AE", "#55A73B", "#DF4C93", "#CDE52F", "#2B78B0", "#32A65D", "#396BB0", "#FFCB1F", "#8561AB", "#2DA380", "#FC4E33", "#FF9913", "#FA344D", "#ED3B6B", "#FFF231", "#FC3633", "#1AA28E", "#A459AB", "#1FB3B3", "#5468AD", "#C75BB1", "#6A64AE"};
+
+    if ((fp = fopen(fn1, "r")) == NULL) {
+        fprintf(stderr, "Unknown File = %s\n", fn1);
+        return;
+    }
+    if (fscanf(fp, "%d %d %d", &i, &j, &numCategory) != 3) {
+        fprintf(stderr, "Error reading file = %s\n", fn1);
+        fclose(fp);
+        return;
+    }
+    fclose(fp);
+
+    int categoryNums[kkDm];
+    memset(categoryNums, 0, sizeof(categoryNums));
+    char *categories[kkDm];
+	for(i = 0; i < kkDm; i++)
+		categories[i] = NULL;
+
+    int categoryIndex = -1;
+
+	for(i = 0; i < kkDm; i++)
+		kkMatC[i] = strtok(kkMatF[i], " ");
+	
+	char temp[kkDm];
+    for (i = 0; i < kkDm-1; i++) {
+        for (j = 0; j < kkDm-i-1; j++) {
+            if (strcmp(kkMatC[j], kkMatC[j+1]) > 0) {
+                strcpy(temp, kkMatC[j]);
+                strcpy(kkMatC[j], kkMatC[j+1]);
+                strcpy(kkMatC[j+1], temp);
+            }
+        }
+    }
+
+    // カテゴリーを描画する座標を計算
+    for(i = 0; i < kkDm; i++) {
+
+        categoryThis = kkMatC[i];
+
+        if (categoryThis == NULL) continue;
+
+        // 同じカテゴリー
+        if (categoryPrev != NULL && strcmp(categoryPrev, categoryThis) == 0) {
+            categoryNums[categoryIndex]++;
+        }
+
+        // 異なるカテゴリー
+        else {
+            categoryIndex++;
+            categories[categoryIndex] = categoryThis; // 新カテゴリーを追加
+			categoryNums[categoryIndex]++;
+        }
+
+        categoryPrev = categoryThis;
+    }
+
+
+	fprintf(stderr, "numCategory = %d\n", numCategory);
+	fprintf(stderr, "categoryIndex = %d\n", categoryIndex);
+
+    if ((fp = fopen(fn2, "w")) == NULL) {
+        fprintf(stderr, "Unknown File = %s\n", fn2);
+        return;
+    }
+
+    for (i = 0; i < kkDm; i++) {
+		if (categories[i] == NULL) continue;
+		if (3 <= categoryNums[i]) {
+			fprintf(stderr, "categories %d = %d %s\n", i, categoryNums[i], categories[i]);
+        	fprintf(fp, "%s %d %s\n", categories[i], categoryNums[i], name[(kkVecC[i]-1)%24]);
+		}
+    }
+    fclose(fp);
 }
 
 
@@ -306,8 +394,8 @@ void kkInitWeight(double v)
 {
 	int		h, i;
 	kkVecA  = (int *) malloc(sizeof(int)*kkDm);
-	kkkkVecT1 = (int *) malloc(sizeof(int)*kkDm);
-	kkkkVecT2 = (int *) malloc(sizeof(int)*kkDm);
+	kkVecT1 = (int *) malloc(sizeof(int)*kkDm);
+	kkVecT2 = (int *) malloc(sizeof(int)*kkDm);
 	
 	kkAllocMatrix(&kkMatW, kkDm, kkDn); kkAllocMatrix(&kkMatG, kkDm, kkDn); 
 	kkAllocMatrix(&kkMatA, kkDn, kkDn); kkAllocVector(&kkVecB, kkDn); 
@@ -346,14 +434,14 @@ void kkCalPath(int i)
 	for(j = 0; j < kkDm; j++) 
 		kkVecA[j] = -1; 
 	
-	for(d = 1, kkVecA[i] = 0, kkkkVecT1[0] = i, h1 = 1; ; d++)
+	for(d = 1, kkVecA[i] = 0, kkVecT1[0] = i, h1 = 1; ; d++)
 	{
 		for(j = 0, h2 = 0; j < h1; j++)
 		{
-			for(k = 0; k < kkNumV[kkkkVecT1[j]]; k++)
+			for(k = 0; k < kkNumV[kkVecT1[j]]; k++)
 			{
 //				kkVecT[j] に隣接しており、探索対象であるノードを s に設定
-				s = kkAdjM[kkkkVecT1[j]][k];
+				s = kkAdjM[kkVecT1[j]][k];
 				
 //				隣接ノード s を既に探索している場合は処理をスキップ
 				if(kkVecA[s] != -1) 
@@ -363,7 +451,7 @@ void kkCalPath(int i)
 				kkVecA[s] = d;
 				
 //				kkVecT[j] に新たに見つかった隣接ノード s を設定 (h2 は kkVecT の要素数)
-				kkkkVecT2[h2++] = s;
+				kkVecT2[h2++] = s;
 			}
 		}
 		
@@ -371,9 +459,9 @@ void kkCalPath(int i)
 		if(h2 == 0) 
 			break;
 		
-//		kkkkVecT2 に格納された頂点を次の探索レベルで探索するために kkkkVecT1 にコピーし、探索を続行
+//		kkVecT2 に格納された頂点を次の探索レベルで探索するために kkVecT1 にコピーし、探索を続行
 		for(j = 0; j < h2; j++) 
-			kkkkVecT1[j] = kkkkVecT2[j]; 
+			kkVecT1[j] = kkVecT2[j]; 
 		
 //		次の探索レベルで探索される頂点の数を設定
 		h1 = h2;
@@ -672,6 +760,7 @@ int kk(char **argv)
 	
 	kkValE[0] = kkCalValue();
 	kkPrintValue(argv[2], argv[3]);
+	kkPrintCategory(argv[4], argv[5]);
 	
 	return 0;
 }
