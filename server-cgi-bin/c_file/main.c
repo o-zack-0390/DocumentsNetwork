@@ -9,7 +9,7 @@
 #include "knn.h"
 #include "kk.h"
 #define Dn "0001"
-#define Dm "50"
+#define Dh "100"
 
 // *json は {name: string, normalText: string, wakachiText: string} を保持する Json データ
 void getRequestJson(cJSON *json, const char *fn1, const char *fn2, const char *fn3) {
@@ -25,16 +25,18 @@ void getRequestJson(cJSON *json, const char *fn1, const char *fn2, const char *f
     copyFile(fn3, "./data/copy_wakachi.txt", wakachiText);
 }
 
-void loadNetworkData(const char *fn1, const char *fn2) {
+void loadNetworkData(const char *fn1, const char *fn2, const char *fn3) {
 
-    cJSON *root  = cJSON_CreateObject();
-    cJSON *edges = cJSON_AddArrayToObject(root, "edges");
-    cJSON *nodes = cJSON_AddArrayToObject(root, "nodes");
+    cJSON *root      = cJSON_CreateObject();
+    cJSON *edges     = cJSON_AddArrayToObject(root, "edges");
+    cJSON *nodes     = cJSON_AddArrayToObject(root, "nodes");
+    cJSON *categories = cJSON_AddArrayToObject(root, "categories");
 
-    int category, id, r;
+    int category, id, total, r;
     double x1, y1, x2, y2, val1, val2;
-    char keyword[20], fileName[50], context[10000], color[8];
+    char keyword[20], fileName[50], context[15000], color[8];
 
+    // エッジの座標をロード
     FILE *fp = fopen(fn1, "r");
     if (!fp) {
         fprintf(stderr, "Unknown file = %s\n", fn1);
@@ -50,12 +52,14 @@ void loadNetworkData(const char *fn1, const char *fn2) {
     }
     fclose(fp);
 
+    // ノードの座標をロード
     fp = fopen(fn2, "r");
     if (!fp) {
         fprintf(stderr, "Unknown file = %s\n", fn2);
         return;
     }
-    while (fscanf(fp, "%d %s %d %s %9999s %lf %lf %d %s", &category, keyword, &id, fileName, context, &val1, &val2, &r, color) == 9) {
+    for (int i = 0; i < atoi(Dh); i++) {
+        fscanf(fp, "%d %s %d %s %14999s %lf %lf %d %s", &category, keyword, &id, fileName, context, &val1, &val2, &r, color);
         cJSON *node = cJSON_CreateObject();
         cJSON_AddNumberToObject(node, "category", category);
         cJSON_AddStringToObject(node, "keyword", keyword);
@@ -67,6 +71,21 @@ void loadNetworkData(const char *fn1, const char *fn2) {
         cJSON_AddNumberToObject(node, "r", r);
         cJSON_AddStringToObject(node, "color", color);
         cJSON_AddItemToArray(nodes, node);
+    }
+    fclose(fp);
+
+    // カテゴリーの座標をロード
+    fp = fopen(fn3, "r");
+    if (!fp) {
+        fprintf(stderr, "Unknown file = %s\n", fn2);
+        return;
+    }
+    while (fscanf(fp, "%s %d %s", keyword, &total, color) != EOF) {
+        cJSON *category = cJSON_CreateObject();
+        cJSON_AddStringToObject(category, "keyword", keyword);
+        cJSON_AddNumberToObject(category, "total", total);
+        cJSON_AddStringToObject(category, "color", color);
+        cJSON_AddItemToArray(categories, category);
     }
     fclose(fp);
 
@@ -96,31 +115,43 @@ void handleRequest() {
     char *input,*clen;
     long length;
     clen = (char*)getenv("CONTENT_LENGTH");
+    if (!clen) {
+        fprintf(stderr, "Missing CONTENT_LENGTH.\n");
+        return;
+    }
     length = atol(clen);
     input = (char*)malloc(length + 1);
-    fgets(input, length+1, stdin);
+    if (!input) {
+        fprintf(stderr, "Memory allocation failed.\n");
+        return;
+    }
+    if (fgets(input, length+1, stdin) == NULL) {
+        fprintf(stderr, "Failed to read input.\n");
+        free(input);
+        return;
+    }
 
     cJSON *json = cJSON_Parse(input);
     if (json == NULL) {
-        fprintf(stderr, "Invalid JSON %s", input);
+        fprintf(stderr, "Invalid JSON: %s", input);
+        free(input);
         return;
     }
 
     // モジュールの引数
     char *mkwidArgs[] = {"./data/copy_wakachi.txt", "./data/wid.txt"};
     char *mklblArgs[] = {"./data/wid.txt", "./data/copy_wakachi.txt", "./data/lbl.txt"};
-    char *nnsk5Args[] = {"./data/lbl.txt", "./data/copy_uid.txt", "./data/wid.txt", "./data/copy_doc.txt", Dn, Dm, "./result/uidk.txt", "./result/lblk.txt"};
+    char *nnsk5Args[] = {"./data/lbl.txt", "./data/copy_uid.txt", "./data/wid.txt", "./data/copy_doc.txt", Dn, Dh, "./result/uidk.txt", "./result/lblk.txt"};
     char *knnArgs  [] = {"./result/lblk.txt", "./result/knnk.txt"};
-    char *kkArgs   [] = {"./result/knnk.txt", "./result/uidk.txt", "./result/kkedge.txt", "./result/kknode.txt"};
+    char *kkArgs   [] = {"./result/knnk.txt", "./result/uidk.txt", "./result/kkedge.txt", "./result/kknode.txt", "./result/lblk.txt", "./result/kkcategory.txt"};
 
     // モジュールを実行
     getRequestJson(json, "./data/uid.txt", "./data/doc.txt", "./data/wakachi.txt");
-    mkwid(mkwidArgs);
     mklbl(mklblArgs);
     nnsk5(nnsk5Args);
     knn(knnArgs);
     kk(kkArgs);
-    loadNetworkData("./result/kkedge.txt", "./result/kknode.txt");
+    loadNetworkData("./result/kkedge.txt", "./result/kknode.txt", "./result/kkcategory.txt");
 
     cJSON_Delete(json);
     free(input);
