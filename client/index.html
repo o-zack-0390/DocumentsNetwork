@@ -38,6 +38,9 @@
             <!-- loading icon -->
             <section id="box-loader"></section>
 
+            <!-- loaded document -->
+            <section id="box-loaded-document"></section>
+
             <!-- document form -->
             <section id="box-form"></section>
 
@@ -64,6 +67,19 @@
         <template id="template-loader">
             <div class="ui hidden divider"></div>
             <div class="ui large active teal text loader">Generating Network</div>
+        </template>
+
+        <!-- mapping loaded document -->
+        <template id="template-loaded-document">
+            <div id="template-query-document" class="ui container raised segment">
+                <a class="ui red ribbon label ribbon-setting">
+                    <!-- Insert query document name -->
+                </a>
+                <div class="ui hidden divider"></div>
+                <p>
+                    <!-- Insert query document context -->
+                </p>
+            </div>
         </template>
 
         <!-- mapping box-form -->
@@ -146,18 +162,20 @@
 
             // ボックス id
             const boxLoaderId         = "#box-loader";
+            const boxLoadedDocumentId = "#box-loaded-document";
             const boxDivider1Id       = "#box-divider-1";
             const boxDivider2Id       = "#box-divider-2";
             const boxFormId           = "#box-form";
-            const boxCategoryId      = "#box-category";
+            const boxCategoryId       = "#box-category";
             const boxNetworkId        = "#box-network";
             const boxDocumentDetailId = "#box-document-detail";
 
             // テンプレート id
             const templateLoaderId         = "#template-loader";
+            const templateLoadedDocumentId = "#template-loaded-document";
             const templateDividerId        = "#template-divider";
             const templateFormId           = "#template-form";
-            const templateCategoryId      = "#template-category";
+            const templateCategoryId       = "#template-category";
             const templateNetworkId        = "#template-network";
             const templateDocumentDetailId = "#template-document-detail";
 
@@ -426,6 +444,22 @@
                 boxForm.appendChild(cloneForm);
             }
 
+            /* クエリ文書ロード画面の生成関数 */
+            function generateLoadedDocument(uploadedName, uploadedText)
+            {
+                const boxLoadedDocument      = document.querySelector(boxLoadedDocumentId);
+                const templateLoadedDocument = document.querySelector(templateLoadedDocumentId);
+                const cloneLoadedDocument    = document.importNode(templateLoadedDocument.content, true);
+
+                // 文書内容を設定
+                cloneLoadedDocument.querySelector("a").innerHTML = uploadedName;
+                cloneLoadedDocument.querySelector("p").innerHTML = uploadedText;
+
+                // ボックスに挿入
+                boxLoadedDocument.innerHTML = '';
+                boxLoadedDocument.appendChild(cloneLoadedDocument);
+            }
+
             /* ローダーの生成関数 */
             function generateLoader()
             {
@@ -452,8 +486,10 @@
             function clearLoader()
             {
                 // ローダーを削除
-                const boxLoader     = document.querySelector(boxLoaderId);
-                boxLoader.innerHTML = '';
+                const boxLoader             = document.querySelector(boxLoaderId);
+                const boxLoadedDocument     = document.querySelector(boxLoadedDocumentId);
+                boxLoader.innerHTML         = '';
+                boxLoadedDocument.innerHTML = '';
             }
 
             /* わかち書き文章の取得関数 */
@@ -513,6 +549,7 @@
 
                     // API 通信を開始
                     generateLoader();
+                    generateLoadedDocument(fileContent.name, uploadedText)
                     await getKkData(uploadDocument);
                     generateDocumentForm();
                     clearLoader();
