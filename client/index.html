@@ -12,11 +12,15 @@
         <style>
             .container-svg {
                 width : 1700px;
-                height: 850px;
+                height: 800px;
+                margin: 20px 0px 0px 0px;
             }
             .circle {
                 opacity: 1;
                 cursor: pointer;
+            }
+            .category {
+                font-size: 24px;
             }
             .ribbon-setting {
                 cursor: default !important;
@@ -30,24 +34,28 @@
     <body>
 <!-- ==== Begin Box ==== -->
         <main>
-            <section id="box-loader">
-                <!-- loading icon -->
-            </section>
-            <section id="box-form">
-                <!-- document form -->
-            </section>
-            <section id="box-divider-1">
-                <!-- margin -->
-            </section>
-            <section id="box-network">
-                <!-- network -->
-            </section>
-            <section id="box-divider-2">
-                <!-- margin -->
-            </section>
-            <section id="box-document-detail">
-                <!-- document details -->
-            </section>
+
+            <!-- loading icon -->
+            <section id="box-loader"></section>
+
+            <!-- document form -->
+            <section id="box-form"></section>
+
+            <!-- margin -->
+            <section id="box-divider-1"></section>
+
+            <!-- categories -->
+            <section id="box-category"></section>
+
+            <!-- network -->
+            <section id="box-network"></section>
+
+            <!-- margin -->
+            <section id="box-divider-2"></section>
+
+            <!-- document details -->
+            <section id="box-document-detail"></section>
+
         </main>
 <!-- ==== End Box ==== -->
 
@@ -80,6 +88,14 @@
                 <!-- Insert text -->
             </h4>
             <div class="ui large hidden divider"></div>
+        </template>
+
+        <!-- mapping box-categories -->
+        <template id="template-category">
+            <div class="ui label">
+                <i class="circle icon" style="visibility: visible;"></i>
+                <!-- Insert category name -->
+            </div>
         </template>
 
         <!-- mapping box-network -->
@@ -124,14 +140,16 @@
 <!-- ==== Begin Script ==== -->
         <script>
 
-            // 文書データ
-            const documents = [];
+            // カテゴリーデータ・文書データ
+            let   categories = [];
+            const documents  = [];
 
             // ボックス id
             const boxLoaderId         = "#box-loader";
             const boxDivider1Id       = "#box-divider-1";
             const boxDivider2Id       = "#box-divider-2";
             const boxFormId           = "#box-form";
+            const boxCategoryId      = "#box-category";
             const boxNetworkId        = "#box-network";
             const boxDocumentDetailId = "#box-document-detail";
 
@@ -139,6 +157,7 @@
             const templateLoaderId         = "#template-loader";
             const templateDividerId        = "#template-divider";
             const templateFormId           = "#template-form";
+            const templateCategoryId      = "#template-category";
             const templateNetworkId        = "#template-network";
             const templateDocumentDetailId = "#template-document-detail";
 
@@ -168,10 +187,12 @@
             /* ネットワーク図の生成関数 */
             function generateNetwork(knnDatas)
             {
-                const attributeEdges = knnDatas.edges;
-                const attributeNodes = knnDatas.nodes;
+                const attributeEdges      = knnDatas.edges;
+                const attributeNodes      = knnDatas.nodes;
+                const attributeCategories = knnDatas.categories
                 generateEdges(attributeEdges);
                 generateNodes(attributeNodes);
+                generateCategories(attributeCategories);
             }
 
             /* クエリ文書の内容を DOM に挿入するメソッド */
@@ -281,7 +302,14 @@
                     const docKeyword = attributeNode.keyword;
                     const docId      = attributeNode.id;
                     const docText    = attributeNode.title;
+                    const docColor   = attributeNode.color;
                     const docTitle   = `${docKeyword} ${docId} ${docName}`;
+
+                    // カテゴリーデータに追加
+                    categories.push({
+                        keyword: docKeyword,
+                        color  : docColor
+                    });
 
                     // 文書データに追加
                     documents.push({
@@ -300,7 +328,7 @@
                     circle.setAttribute("cx", attributeNode.cx);
                     circle.setAttribute("cy", attributeNode.cy);
                     circle.setAttribute("r", attributeNode.r);
-                    circle.setAttribute("fill", attributeNode.color);
+                    circle.setAttribute("fill", docColor);
                     circle.setAttribute("onclick", `generateSimilarDocumentDetail("${docName}")`);
                     circle.classList.add("circle");
 
@@ -319,7 +347,6 @@
                 };
 
                 // 文書詳細画面にクエリ文書を追加
-                console.log(attributeNodes.length);
                 generateQueryDocumentDetail(
                     `${attributeNodes[0].keyword} ${attributeNodes[0].id} ${attributeNodes[0].fileName}`,
                     attributeNodes[0].title
@@ -328,6 +355,48 @@
                 // ボックスにノードを追加
                 attributeNodes.forEach(attributeNode => {
                     addNode(attributeNode);
+                });
+            }
+
+            /* カテゴリーの生成関数 */
+            function generateCategories(attributeCategories)
+            {
+                const boxCategory      = document.querySelector(boxCategoryId);
+                const templateCategory = document.querySelector(templateCategoryId);
+
+                const findCategory = (keyword) => {
+                    const category = categories.find(cat => cat.keyword === keyword);
+                    return category ? category.color : null;
+                };
+
+                // カテゴリーデータの重複を削除
+                categories = attributeCategories.map((attributeCategory) => ({
+                    keyword: attributeCategory.keyword,
+                    total: attributeCategory.total,
+                    color: findCategory(attributeCategory.keyword)
+                }));
+
+                // カテゴリーを追加するメソッド
+                const addCategory = (attributeCategory) =>
+                {
+                    // カテゴリー DOM を複製
+                    const cloneCategory = document.importNode(templateCategory.content, true);
+
+                    // カテゴリー名と総数を設定
+                    cloneCategory.querySelector("div").childNodes[2].textContent = `${attributeCategory.keyword}:${attributeCategory.total}`;
+
+                    // カテゴリー色を設定
+                    const targetAttributeCategory = categories.find((category) => {return category.keyword === attributeCategory.keyword});
+                    cloneCategory.querySelector("i").style.color = targetAttributeCategory.color;
+                    
+                    // 設定後のカテゴリー DOM をボックスに挿入
+                    boxCategory.appendChild(cloneCategory);
+                }
+
+                // ボックスに降順ソートしたカテゴリーを追加
+                attributeCategories.sort((a, b) => {return Number(b.total) - Number(a.total)});
+                attributeCategories.forEach(attributeCategory => {
+                    addCategory(attributeCategory);
                 });
             }
 
@@ -365,10 +434,12 @@
                 const templateLoader = document.querySelector(templateLoaderId);
                 const cloneLoader    = document.importNode(templateLoader.content, true);
 
-                // 描画しているネットワーク・文書詳細画面・フォームを削除
+                // 描画しているカテゴリー・ネットワーク・文書詳細画面・フォームを削除
+                const boxCategory           = document.querySelector(boxCategoryId);
                 const boxNetwork            = document.querySelector(boxNetworkId);
                 const boxDocumentDetail     = document.querySelector(boxDocumentDetailId);
                 const boxForm               = document.querySelector(boxFormId);
+                boxCategory.innerHTML       = '';
                 boxNetwork.innerHTML        = '';
                 boxDocumentDetail.innerHTML = '';
                 boxForm.innerHTML           = '';
