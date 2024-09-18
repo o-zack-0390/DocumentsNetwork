@@ -1,0 +1,2 @@
+ローカルディレクトリの index.html を コンテナ内の index.html にコピー
+$ docker cp ./client/index.html client:/projects/client/index.html
