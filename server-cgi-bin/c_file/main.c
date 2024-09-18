@@ -30,7 +30,6 @@ void loadNetworkData(const char *fn1, const char *fn2, const char *fn3) {
     cJSON *root      = cJSON_CreateObject();
     cJSON *edges     = cJSON_AddArrayToObject(root, "edges");
     cJSON *nodes     = cJSON_AddArrayToObject(root, "nodes");
-    cJSON *categories = cJSON_AddArrayToObject(root, "categories");
 
     int category, id, total, r;
     double x1, y1, x2, y2, val1, val2;
@@ -71,21 +70,6 @@ void loadNetworkData(const char *fn1, const char *fn2, const char *fn3) {
         cJSON_AddNumberToObject(node, "r", r);
         cJSON_AddStringToObject(node, "color", color);
         cJSON_AddItemToArray(nodes, node);
-    }
-    fclose(fp);
-
-    // カテゴリーの座標をロード
-    fp = fopen(fn3, "r");
-    if (!fp) {
-        fprintf(stderr, "Unknown file = %s\n", fn2);
-        return;
-    }
-    while (fscanf(fp, "%s %d %s", keyword, &total, color) != EOF) {
-        cJSON *category = cJSON_CreateObject();
-        cJSON_AddStringToObject(category, "keyword", keyword);
-        cJSON_AddNumberToObject(category, "total", total);
-        cJSON_AddStringToObject(category, "color", color);
-        cJSON_AddItemToArray(categories, category);
     }
     fclose(fp);
 
@@ -143,7 +127,7 @@ void handleRequest() {
     char *mklblArgs[] = {"./data/wid.txt", "./data/copy_wakachi.txt", "./data/lbl.txt"};
     char *nnsk5Args[] = {"./data/lbl.txt", "./data/copy_uid.txt", "./data/wid.txt", "./data/copy_doc.txt", Dn, Dh, "./result/uidk.txt", "./result/lblk.txt"};
     char *knnArgs  [] = {"./result/lblk.txt", "./result/knnk.txt"};
-    char *kkArgs   [] = {"./result/knnk.txt", "./result/uidk.txt", "./result/kkedge.txt", "./result/kknode.txt", "./result/lblk.txt", "./result/kkcategory.txt"};
+    char *kkArgs   [] = {"./result/knnk.txt", "./result/uidk.txt", "./result/kkedge.txt", "./result/kknode.txt", "./result/kkcategory.txt"};
 
     // モジュールを実行
     getRequestJson(json, "./data/uid.txt", "./data/doc.txt", "./data/wakachi.txt");

@@ -221,10 +221,19 @@ void kkLLsolve(double **LL, double *B, double *X, int dim)//kkMatA, kkMatG[i], k
 
 void kkPrintValue(char *fn1, char *fn2)
 {
-	static char	*name[24] = {"#FF6E2B", "#99D02C", "#1C86AE", "#55A73B", "#DF4C93", "#CDE52F", "#2B78B0", "#32A65D", "#396BB0", "#FFCB1F", "#8561AB", "#2DA380", "#FC4E33", "#FF9913", "#FA344D", "#ED3B6B", "#FFF231", "#FC3633", "#1AA28E", "#A459AB", "#1FB3B3", "#5468AD", "#C75BB1", "#6A64AE"};
 	FILE	*fp;
 	int		i, j, k, x = 1600, y = 700;
-	double	v, w; 
+	double	v, w;
+	static char *name[64] = {
+		"#FF0000", "#00FF00", "#0000FF", "#FFFF00", "#FF00FF", "#00FFFF", "#800000", "#008000", 
+		"#000080", "#808000", "#800080", "#008080", "#C0C0C0", "#808080", "#FFA500", "#A52A2A", 
+		"#8B4513", "#FFD700", "#DAA520", "#B8860B", "#CD853F", "#D2691E", "#FF6347", "#FF4500", 
+		"#FF1493", "#FF69B4", "#FFB6C1", "#FF8C00", "#ADFF2F", "#7FFF00", "#32CD32", "#00FA9A", 
+		"#00FF7F", "#7FFFD4", "#40E0D0", "#4682B4", "#5F9EA0", "#6495ED", "#1E90FF", "#4169E1", 
+		"#0000CD", "#8A2BE2", "#9932CC", "#BA55D3", "#9370DB", "#4B0082", "#9400D3", "#FF00FF", 
+		"#EE82EE", "#DDA0DD", "#BC8F8F", "#F08080", "#FA8072", "#E9967A", "#FFA07A", "#FF4500", 
+		"#DC143C", "#B22222", "#8B0000", "#CD5C5C", "#E0FFFF", "#F5FFFA", "#F0FFF0", "#FAFAD2"
+	};
 	
 //	ノードの座標の最大値と最小値(横軸)を求める
 	for(i = 0; i < kkDm; i++)
@@ -275,96 +284,12 @@ void kkPrintValue(char *fn1, char *fn2)
 	
 //	ノードの座標を生成
 	fp = fopen(fn2, "w");
-	fprintf(fp, "%d %s %f %f 16 %s\n", kkVecC[0], kkMatF[0], kkMatW[0][0], kkMatW[0][1], name[(kkVecC[0]-1)%24]); 
+	fprintf(fp, "%d %s %f %f 16 %s\n", kkVecC[0], kkMatF[0], kkMatW[0][0], kkMatW[0][1], name[(kkVecC[0]-1)%64]); 
 	for(i = 1; i < kkDm; i++)
 	{
-		fprintf(fp, "%d %s %f %f 8 %s\n", kkVecC[i], kkMatF[i], kkMatW[i][0], kkMatW[i][1], name[(kkVecC[i]-1)%24]);
+		fprintf(fp, "%d %s %f %f 8 %s\n", kkVecC[i], kkMatF[i], kkMatW[i][0], kkMatW[i][1], name[(kkVecC[i]-1)%64]);
 	}
-	fclose(fp); 
-}
-
-
-void kkPrintCategory(char *fn1, char *fn2) {
-    fprintf(stderr, "Start Category\n");
-    FILE *fp;
-    int i, j, k, numCategory;
-
-    char *categoryPrev = NULL;
-    char *categoryThis = NULL;
-    char *name[24] = {"#FF6E2B", "#99D02C", "#1C86AE", "#55A73B", "#DF4C93", "#CDE52F", "#2B78B0", "#32A65D", "#396BB0", "#FFCB1F", "#8561AB", "#2DA380", "#FC4E33", "#FF9913", "#FA344D", "#ED3B6B", "#FFF231", "#FC3633", "#1AA28E", "#A459AB", "#1FB3B3", "#5468AD", "#C75BB1", "#6A64AE"};
-
-    if ((fp = fopen(fn1, "r")) == NULL) {
-        fprintf(stderr, "Unknown File = %s\n", fn1);
-        return;
-    }
-    if (fscanf(fp, "%d %d %d", &i, &j, &numCategory) != 3) {
-        fprintf(stderr, "Error reading file = %s\n", fn1);
-        fclose(fp);
-        return;
-    }
-    fclose(fp);
-
-    int categoryNums[kkDm];
-    memset(categoryNums, 0, sizeof(categoryNums));
-    char *categories[kkDm];
-	for(i = 0; i < kkDm; i++)
-		categories[i] = NULL;
-
-    int categoryIndex = -1;
-
-	for(i = 0; i < kkDm; i++)
-		kkMatC[i] = strtok(kkMatF[i], " ");
-	
-	char temp[kkDm];
-    for (i = 0; i < kkDm-1; i++) {
-        for (j = 0; j < kkDm-i-1; j++) {
-            if (strcmp(kkMatC[j], kkMatC[j+1]) > 0) {
-                strcpy(temp, kkMatC[j]);
-                strcpy(kkMatC[j], kkMatC[j+1]);
-                strcpy(kkMatC[j+1], temp);
-            }
-        }
-    }
-
-    // カテゴリーを描画する座標を計算
-    for(i = 0; i < kkDm; i++) {
-
-        categoryThis = kkMatC[i];
-
-        if (categoryThis == NULL) continue;
-
-        // 同じカテゴリー
-        if (categoryPrev != NULL && strcmp(categoryPrev, categoryThis) == 0) {
-            categoryNums[categoryIndex]++;
-        }
-
-        // 異なるカテゴリー
-        else {
-            categoryIndex++;
-            categories[categoryIndex] = categoryThis; // 新カテゴリーを追加
-			categoryNums[categoryIndex]++;
-        }
-
-        categoryPrev = categoryThis;
-    }
-
-
-	fprintf(stderr, "numCategory = %d\n", numCategory);
-	fprintf(stderr, "categoryIndex = %d\n", categoryIndex);
-
-    if ((fp = fopen(fn2, "w")) == NULL) {
-        fprintf(stderr, "Unknown File = %s\n", fn2);
-        return;
-    }
-
-    for (i = 0; i < kkDm; i++) {
-		if (categories[i] == NULL) continue;
-		if (3 <= categoryNums[i]) {
-			fprintf(stderr, "categories %d = %d %s\n", i, categoryNums[i], categories[i]);
-        	fprintf(fp, "%s %d %s\n", categories[i], categoryNums[i], name[(kkVecC[i]-1)%24]);
-		}
-    }
-    fclose(fp);
+	fclose(fp);
 }
 
 
@@ -760,7 +685,6 @@ int kk(char **argv)
 	
 	kkValE[0] = kkCalValue();
 	kkPrintValue(argv[2], argv[3]);
-	kkPrintCategory(argv[4], argv[5]);
 	
 	return 0;
 }

@@ -205,12 +205,9 @@
             /* ネットワーク図の生成関数 */
             function generateNetwork(knnDatas)
             {
-                const attributeEdges      = knnDatas.edges;
-                const attributeNodes      = knnDatas.nodes;
-                const attributeCategories = knnDatas.categories
-                generateEdges(attributeEdges);
-                generateNodes(attributeNodes);
-                generateCategories(attributeCategories);
+                generateEdges(knnDatas.edges);
+                generateNodes(knnDatas.nodes);
+                generateCategories(knnDatas.nodes); // ノードの要素にカテゴリー情報が存在する
             }
 
             /* クエリ文書の内容を DOM に挿入するメソッド */
@@ -382,39 +379,36 @@
                 const boxCategory      = document.querySelector(boxCategoryId);
                 const templateCategory = document.querySelector(templateCategoryId);
 
-                const findCategory = (keyword) => {
-                    const category = categories.find(cat => cat.keyword === keyword);
-                    return category ? category.color : null;
-                };
-
-                // カテゴリーデータの重複を削除
-                categories = attributeCategories.map((attributeCategory) => ({
-                    keyword: attributeCategory.keyword,
-                    total: attributeCategory.total,
-                    color: findCategory(attributeCategory.keyword)
-                }));
-
                 // カテゴリーを追加するメソッド
-                const addCategory = (attributeCategory) =>
+                const addCategory = (category) =>
                 {
                     // カテゴリー DOM を複製
                     const cloneCategory = document.importNode(templateCategory.content, true);
 
-                    // カテゴリー名と総数を設定
-                    cloneCategory.querySelector("div").childNodes[2].textContent = `${attributeCategory.keyword}:${attributeCategory.total}`;
-
-                    // カテゴリー色を設定
-                    const targetAttributeCategory = categories.find((category) => {return category.keyword === attributeCategory.keyword});
-                    cloneCategory.querySelector("i").style.color = targetAttributeCategory.color;
+                    // 「カテゴリー名,総数,カテゴリー色」を設定
+                    cloneCategory.querySelector("div").childNodes[2].textContent = `${category.keyword}:${category.total}`;
+                    cloneCategory.querySelector("i").style.color = category.color;
                     
                     // 設定後のカテゴリー DOM をボックスに挿入
                     boxCategory.appendChild(cloneCategory);
                 }
 
+                // カテゴリーデータの重複を削除
+                const categories = Array.from(new Set(attributeCategories.map((attributeCategory) => attributeCategory.keyword)))
+                                        .map((keyword) => {
+                                            const duplicatedCategories = attributeCategories.filter((attributeCategory) => attributeCategory.keyword === keyword);
+                                            const category = duplicatedCategories[0];
+                                            return {
+                                                keyword: category.keyword,
+                                                total: Number(duplicatedCategories.length),
+                                                color: category.color
+                                            };})
+                                        .filter(category => category.total >= 3); // totalが5以上の要素のみ残す
+
                 // ボックスに降順ソートしたカテゴリーを追加
-                attributeCategories.sort((a, b) => {return Number(b.total) - Number(a.total)});
-                attributeCategories.forEach(attributeCategory => {
-                    addCategory(attributeCategory);
+                categories.sort((a, b) => {return Number(b.total) - Number(a.total)});
+                categories.forEach(category => {
+                    addCategory(category);
                 });
             }
 
