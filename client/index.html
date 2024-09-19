@@ -35,9 +35,6 @@
 <!-- ==== Begin Box ==== -->
         <main>
 
-            <!-- loading icon -->
-            <section id="box-loader"></section>
-
             <!-- loaded document -->
             <section id="box-loaded-document"></section>
 
@@ -58,6 +55,9 @@
 
             <!-- document details -->
             <section id="box-document-detail"></section>
+
+            <!-- loading icon -->
+            <section id="box-loader"></section>
 
         </main>
 <!-- ==== End Box ==== -->
@@ -156,9 +156,11 @@
 <!-- ==== Begin Script ==== -->
         <script>
 
-            // カテゴリーデータ・文書データ
-            let   categories = [];
-            const documents  = [];
+            // バックエンド側のパス
+            const pathKkData = "http://localhost/cgi-bin/main.cgi";
+
+            // 文書データ
+            const documents = [];
 
             // ボックス id
             const boxLoaderId         = "#box-loader";
@@ -179,12 +181,10 @@
             const templateNetworkId        = "#template-network";
             const templateDocumentDetailId = "#template-document-detail";
 
-            /* KNNデータの取得関数 */
-            async function getKkData(uploadDocument)
+            /* ネットワーク図の生成関数 */
+            async function generateNetWork(uploadDocument)
             {
-                // バックエンド側のパス
-                const pathKkData = "http://localhost/cgi-bin/main.cgi";
-
+                // バックエンド側からデータを取得
                 try {
                     const response = await fetch(pathKkData, {
                         method : "POST",
@@ -194,7 +194,7 @@
                     })
                     .then(response => response.json())
                     .then(data => {
-                        generateNetwork(data); // ネットワーク図を生成
+                        generateComponents(data); // DOM を生成
                     })
                 }
                 catch (error) {
@@ -203,8 +203,10 @@
             }
 
             /* ネットワーク図の生成関数 */
-            function generateNetwork(knnDatas)
+            function generateComponents(knnDatas)
             {
+                generateDivider();
+                generateDocumentForm();
                 generateEdges(knnDatas.edges);
                 generateNodes(knnDatas.nodes);
                 generateCategories(knnDatas.nodes); // ノードの要素にカテゴリー情報が存在する
@@ -320,12 +322,6 @@
                     const docColor   = attributeNode.color;
                     const docTitle   = `${docKeyword} ${docId} ${docName}`;
 
-                    // カテゴリーデータに追加
-                    categories.push({
-                        keyword: docKeyword,
-                        color  : docColor
-                    });
-
                     // 文書データに追加
                     documents.push({
                         name    : docName,
@@ -403,7 +399,7 @@
                                                 total: Number(duplicatedCategories.length),
                                                 color: category.color
                                             };})
-                                        .filter(category => category.total >= 3); // totalが5以上の要素のみ残す
+                                        .filter(category => category.total >= 3); // totalが３以上の要素のみ残す
 
                 // ボックスに降順ソートしたカテゴリーを追加
                 categories.sort((a, b) => {return Number(b.total) - Number(a.total)});
@@ -462,18 +458,45 @@
                 const templateLoader = document.querySelector(templateLoaderId);
                 const cloneLoader    = document.importNode(templateLoader.content, true);
 
-                // 描画しているカテゴリー・ネットワーク・文書詳細画面・フォームを削除
-                const boxCategory           = document.querySelector(boxCategoryId);
-                const boxNetwork            = document.querySelector(boxNetworkId);
-                const boxDocumentDetail     = document.querySelector(boxDocumentDetailId);
-                const boxForm               = document.querySelector(boxFormId);
-                boxCategory.innerHTML       = '';
-                boxNetwork.innerHTML        = '';
-                boxDocumentDetail.innerHTML = '';
-                boxForm.innerHTML           = '';
-
                 // ローダーを追加
                 boxLoader.appendChild(cloneLoader);
+            }
+
+            /* 境界線の削除関数 */
+            function clearDivider()
+            {
+                const boxDivider1     = document.querySelector(boxDivider1Id);
+                const boxDivider2     = document.querySelector(boxDivider2Id);
+                boxDivider1.innerHTML = '';
+                boxDivider2.innerHTML = '';
+            }
+
+            /* カテゴリーの削除関数 */
+            function clearCategory()
+            {
+                const boxCategory = document.querySelector(boxCategoryId);
+                boxCategory.innerHTML = '';
+            }
+
+            /* ネットワークの削除関数 */
+            function clearNetwork()
+            {
+                const boxNetwork = document.querySelector(boxNetworkId);
+                boxNetwork.innerHTML = '';
+            }
+
+            /* 文書詳細画面の削除関数 */
+            function clearDocumentDetail()
+            {
+                const boxDocumentDetail = document.querySelector(boxDocumentDetailId);
+                boxDocumentDetail.innerHTML = '';
+            }
+
+            /* フォームの削除関数 */
+            function clearForm()
+            {
+                const boxForm = document.querySelector(boxFormId);
+                boxForm.innerHTML = '';
             }
 
             /* ローダーの削除関数 */
@@ -484,6 +507,18 @@
                 const boxLoadedDocument     = document.querySelector(boxLoadedDocumentId);
                 boxLoader.innerHTML         = '';
                 boxLoadedDocument.innerHTML = '';
+            }
+
+            /* レスポンス待機時の実行関数 */
+            function processLoading(fileName, fileContent)
+            {
+                clearDivider();
+                clearCategory();
+                clearNetwork();
+                clearDocumentDetail();
+                clearForm();
+                generateLoader();
+                generateLoadedDocument(fileName, fileContent) // ロード中にクエリ文書を表示しておく
             }
 
             /* わかち書き文章の取得関数 */
@@ -537,15 +572,17 @@
                         reader.onerror = error => reject(error);
                     });
 
-                    // クエリ文書の内容を設定
+                    // クエリ文書のテキストを設定
                     uploadDocument.normalText  = uploadedText;
                     uploadDocument.wakachiText = await getWakachiSentence(uploadedText);
 
-                    // API 通信を開始
-                    generateLoader();
-                    generateLoadedDocument(fileContent.name, uploadedText)
-                    await getKkData(uploadDocument);
-                    generateDocumentForm();
+                    // ロード時の処理
+                    processLoading(fileContent.name, uploadedText);
+
+                    // バックエンド側からのレスポンスを取得して DOM を更新
+                    await generateNetWork(uploadDocument);
+
+                    // 全ての DOM がレンダリングされたらロード画面を削除
                     clearLoader();
                 }
                 catch (error)
@@ -555,6 +592,7 @@
                 }
             }
 
+            /* 初期レンダリング時に実行 */
             document.addEventListener("DOMContentLoaded", () =>
             {
                 generateDivider();
