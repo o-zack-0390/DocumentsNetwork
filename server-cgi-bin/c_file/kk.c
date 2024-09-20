@@ -284,10 +284,10 @@ void kkPrintValue(char *fn1, char *fn2)
 	
 //	ノードの座標を生成
 	fp = fopen(fn2, "w");
-	fprintf(fp, "%d %s %f %f 16 %s\n", kkVecC[0], kkMatF[0], kkMatW[0][0], kkMatW[0][1], name[(kkVecC[0]-1)%64]); 
+	fprintf(fp, "%d %s %f %f 12 %s\n", kkVecC[0], kkMatF[0], kkMatW[0][0], kkMatW[0][1], name[(kkVecC[0]-1)%64]); 
 	for(i = 1; i < kkDm; i++)
 	{
-		fprintf(fp, "%d %s %f %f 8 %s\n", kkVecC[i], kkMatF[i], kkMatW[i][0], kkMatW[i][1], name[(kkVecC[i]-1)%64]);
+		fprintf(fp, "%d %s %f %f 6 %s\n", kkVecC[i], kkMatF[i], kkMatW[i][0], kkMatW[i][1], name[(kkVecC[i]-1)%64]);
 	}
 	fclose(fp);
 }

@@ -6,6 +6,8 @@
 #include "mkwid.h"
 #include "mklbl.h"
 #include "nnsk5.h"
+#include "mst.h"
+#include "hml.h"
 #include "knn.h"
 #include "kk.h"
 #define Dn "0001"
@@ -126,14 +128,18 @@ void handleRequest() {
     char *mkwidArgs[] = {"./data/copy_wakachi.txt", "./data/wid.txt"};
     char *mklblArgs[] = {"./data/wid.txt", "./data/copy_wakachi.txt", "./data/lbl.txt"};
     char *nnsk5Args[] = {"./data/lbl.txt", "./data/copy_uid.txt", "./data/wid.txt", "./data/copy_doc.txt", Dn, Dh, "./result/uidk.txt", "./result/lblk.txt"};
-    char *knnArgs  [] = {"./result/lblk.txt", "./result/knnk.txt"};
-    char *kkArgs   [] = {"./result/knnk.txt", "./result/uidk.txt", "./result/kkedge.txt", "./result/kknode.txt", "./result/kkcategory.txt"};
+    char *mstArgs  [] = {"./result/lblk.txt", "./result/mst.txt"};
+    char *hmlArgs  [] = {"./result/lblk.txt", "./result/mst.txt", "1", "./result/hml.txt"};
+    char *knnArgs  [] = {"./result/lbl.txt", "./result/knn.txt"};
+    char *kkArgs   [] = {"./result/hml.txt", "./result/uidk.txt", "./result/kkedge.txt", "./result/kknode.txt", "./result/kkcategory.txt"};
 
     // モジュールを実行
     getRequestJson(json, "./data/uid.txt", "./data/doc.txt", "./data/wakachi.txt");
     mklbl(mklblArgs);
     nnsk5(nnsk5Args);
-    knn(knnArgs);
+    mst(mstArgs);
+    hml(hmlArgs);
+    //knn(knnArgs);
     kk(kkArgs);
     loadNetworkData("./result/kkedge.txt", "./result/kknode.txt", "./result/kkcategory.txt");
 

@@ -1,0 +1,1 @@
+int	mst(char **argv);
