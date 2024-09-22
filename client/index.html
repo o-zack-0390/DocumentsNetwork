@@ -10,10 +10,14 @@
         <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/fomantic-ui@2.9.2/dist/semantic.min.css">
 <!-- ==== Begin Style ==== -->
         <style>
-            .container-svg {
-                width : 1700px;
-                height: 800px;
-                margin: 20px 0px 0px 0px;
+            .container {
+                width : 100%;
+                height: 100%;
+                padding: 0px 10px;
+            }
+            .container-network {
+                width : 100%;
+                height: 80%;
             }
             .circle {
                 opacity: 1;
@@ -33,7 +37,7 @@
 <!-- ==== Begin Body ==== -->
     <body>
 <!-- ==== Begin Box ==== -->
-        <main>
+        <main class="container">
 
             <!-- loaded document -->
             <section id="box-loaded-document"></section>
@@ -48,7 +52,7 @@
             <section id="box-category"></section>
 
             <!-- network -->
-            <section id="box-network"></section>
+            <section id="box-network" class="container-network"></section>
 
             <!-- margin -->
             <section id="box-divider-2"></section>
@@ -71,6 +75,7 @@
 
         <!-- mapping loaded document -->
         <template id="template-loaded-document">
+            <div class="ui messive hidden divider"></div>
             <div id="template-query-document" class="ui container raised segment">
                 <a class="ui red ribbon label ribbon-setting">
                     <!-- Insert query document name -->
@@ -177,7 +182,6 @@
 
         <!-- mapping box-divider -->
         <template id="template-divider">
-            <div class="ui large hidden divider"></div>
             <h4 id="divider-header" class="ui massive horizontal divider header">
                 <i class=""></i>
                 <!-- Insert text -->
@@ -198,7 +202,7 @@
             <svg
                 xmlns="http://www.w3.org/2000/svg"
                 xmlns:xlink="http://www.w3.org/1999/xlink"
-                class="container-svg"
+                class="container"
             >
             </svg>
         </template>
