@@ -1,1 +1,1 @@
-int	knn(char **argv);
+int	knn(const char **argv);

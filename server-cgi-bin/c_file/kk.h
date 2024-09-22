@@ -1,1 +1,1 @@
-void kk(char **argv);
+void kk(const char **argv);

@@ -11,7 +11,7 @@ int     kkDm, kkDn, kkDc, kkCntV[4], *kkNumV, **kkAdjM, *kkNumC, *kkVecC, *kkVec
 double	**kkIn, *kkDecV, **kkMatW, **kkMatG, kkValE[2], **kkMatA, *kkVecB, *kkVecT;
 
 /* knn3000k100.txt をロード */
-void    kkReadValue(char *fn1)
+void    kkReadValue(const char *fn1)
 {
 	/*
 		kkNumV[i]    : ノード i に接続しているエッジ数
@@ -55,7 +55,7 @@ void    kkReadValue(char *fn1)
 }
 
 
-void kkReadUid(char *fn1)
+void kkReadUid(const char *fn1)
 {
 	FILE   *fp;
 	char	c; 
@@ -219,7 +219,7 @@ void kkLLsolve(double **LL, double *B, double *X, int dim)//kkMatA, kkMatG[i], k
 }
 
 
-void kkPrintValue(char *fn1, char *fn2)
+void kkPrintValue(const char *fn1, const char *fn2)
 {
 	FILE	*fp;
 	int		i, j, k, x = 1600, y = 700;
@@ -648,7 +648,7 @@ int	kkUpdateWeight(double *max)
 }
 
 
-int kk(char **argv)
+int kk(const char **argv)
 {
 	char   name[256];
     int    i, j, k, m;

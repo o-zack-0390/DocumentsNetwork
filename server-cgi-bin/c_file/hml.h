@@ -1,1 +1,1 @@
-int		hml(char **argv);
+int		hml(const char **argv);

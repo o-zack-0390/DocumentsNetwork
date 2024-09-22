@@ -8,7 +8,7 @@ char	*mklblVecN, **mklblMatM;
 int		mklblDm, mklblDn, *mklblVecA, **mklblMatA, *mklblVecS, *mklblVecT; 
 
 
-void    mklblReadValue0(char *fn1)
+void    mklblReadValue0(const char *fn1)
 {
 	FILE		*fp;
 	int		c, i, j, k;
@@ -39,7 +39,7 @@ int		mklblSearch(char *np, int b, int e)
 	else if(v < 0) return(mklblSearch(np, b, c)); 
 	else return(mklblSearch(np, c+1, e));
 }
-void	mklblReadValue(char *fn1)
+void	mklblReadValue(const char *fn1)
 {
 	FILE	*fp;
 	int		c, i, j, k;  
@@ -66,7 +66,7 @@ void	mklblReadValue(char *fn1)
 	}
 	fclose(fp);
 }
-void	mklblPrintValue(char *fn1)
+void	mklblPrintValue(const char *fn1)
 {
 	FILE	*fp;
 	int		h, i, j, k;
@@ -90,13 +90,13 @@ void	mklblPrintValue(char *fn1)
 	}
 	fclose(fp);
 }
-int	mklbl(char **argv)
+int	mklbl(const char **argv)
 {
 	int		i, j, k;
-	mklblReadValue0(argv[0]); 
+	mklblReadValue0(argv[0]);
 	mklblVecS = (int *) malloc(sizeof(int)*mklblDn); 
 	mklblVecT = (int *) malloc(sizeof(int)*mklblDn); 
 	mklblReadValue(argv[1]);
-	mklblPrintValue(argv[2]); 
+	mklblPrintValue(argv[2]);
 	return 0; 
 }

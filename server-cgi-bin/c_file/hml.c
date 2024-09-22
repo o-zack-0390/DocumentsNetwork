@@ -6,7 +6,7 @@
 int		hmlDm, hmlDn, hmlDh, *hmlVecU, **hmlMatU, *hmlVecA, **hmlMatA, *hmlVecB, **hmlMatB, *hmlVecC, *hmlVecD, *hmlVecI, *hmlVecJ, *hmlVecS, *hmlVecT;
 double	**hmlMatX, *hmlVecV, *hmlVecW, *hmlVecX;
 
-void    hmlReadValue1(char *fn1)
+void    hmlReadValue1(const char *fn1)
 {
 	FILE		*fp;
 	int		i, j, k;
@@ -30,7 +30,7 @@ void    hmlReadValue1(char *fn1)
 	}
 	fclose(fp);
 }
-void    hmlReadValue2(char *fn1)
+void    hmlReadValue2(const char *fn1)
 {
 	FILE		*fp;
 	int		i, j, k, h;
@@ -94,7 +94,7 @@ void	hmlCalValue()
 		hmlMySort(hmlVecS, hmlVecT, hmlVecV, n); if(n > hmlDh) n = hmlDh; 
 	}
 }
-void	hmlPrintValue(char *fn1)
+void	hmlPrintValue(const char *fn1)
 {
 	FILE	*fp;
 	int		g, h, i, j, u, v, c;
@@ -124,19 +124,13 @@ void	hmlPrintValue(char *fn1)
 	}
 	fclose(fp); 
 }
-int		hml(char **argv)
+int		hml(const char **argv)
 {
-	fprintf(stderr, "Start\n");
 	hmlReadValue1(argv[0]);
-	fprintf(stderr, "hmlReadValue1\n");
 	hmlReadValue2(argv[1]);
-	fprintf(stderr, "hmlReadValue2\n");
 	hmlDh = atoi(argv[2])*(hmlDm-1); 
 	hmlInitValue();
-	fprintf(stderr, "hmlInitValue\n");
 	hmlCalValue();
-	fprintf(stderr, "hmlCalValue\n");
 	hmlPrintValue(argv[3]);
-	fprintf(stderr, "hmlPrintValue\n");
 	return 0;
 }

@@ -1,1 +1,1 @@
-int	mst(char **argv);
+int	mst(const char **argv);

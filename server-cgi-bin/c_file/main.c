@@ -1,17 +1,30 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include "cJSON.h"
 #include "copyFile.h"
-#include "mkwid.h"
-#include "mklbl.h"
-#include "nnsk5.h"
-#include "mst.h"
-#include "hml.h"
-#include "knn.h"
-#include "kk.h"
+#include "preprocess.h"
+#include "generateGraph.h"
+#include "generateNetwork.h"
 #define Dn "0001"
-#define Dh "100"
+
+// ネットワーク生成時のオプション
+typedef struct SelectedOption {
+    char *network;   // 可視化方法
+    char *graph;     // グラフ構築方法
+    char *searchNum; // 検索文書数
+}selectedOption;
+
+selectedOption init(char *network, char *graph, char *searchNum) {
+    selectedOption co;
+    co.network = network;
+    co.graph = graph;
+    co.searchNum = searchNum;
+    return co;
+}
+
+selectedOption option;
 
 // *json は {name: string, normalText: string, wakachiText: string} を保持する Json データ
 void getRequestJson(cJSON *json, const char *fn1, const char *fn2, const char *fn3) {
@@ -20,6 +33,11 @@ void getRequestJson(cJSON *json, const char *fn1, const char *fn2, const char *f
     const char *name        = cJSON_GetObjectItem(json, "name")->valuestring;
     const char *normalText  = cJSON_GetObjectItem(json, "normalText")->valuestring;
     const char *wakachiText = cJSON_GetObjectItem(json, "wakachiText")->valuestring;
+    option = init(
+        cJSON_GetObjectItem(json, "networkType")->valuestring,
+        cJSON_GetObjectItem(json, "graphType")->valuestring,
+        cJSON_GetObjectItem(json, "searchNum")->valuestring
+    );
 
     // クエリ文書を追加した文書データセットを作成
     copyFile(fn1, "./data/copy_uid.txt", name);
@@ -27,7 +45,7 @@ void getRequestJson(cJSON *json, const char *fn1, const char *fn2, const char *f
     copyFile(fn3, "./data/copy_wakachi.txt", wakachiText);
 }
 
-void loadNetworkData(const char *fn1, const char *fn2, const char *fn3) {
+void loadNetworkData(const char *fn1, const char *fn2, const char *fn3, const char *searchNum) {
 
     cJSON *root      = cJSON_CreateObject();
     cJSON *edges     = cJSON_AddArrayToObject(root, "edges");
@@ -59,7 +77,7 @@ void loadNetworkData(const char *fn1, const char *fn2, const char *fn3) {
         fprintf(stderr, "Unknown file = %s\n", fn2);
         return;
     }
-    for (int i = 0; i < atoi(Dh); i++) {
+    for (int i = 0; i < atoi(searchNum); i++) {
         fscanf(fp, "%d %s %d %s %14999s %lf %lf %d %s", &category, keyword, &id, fileName, context, &val1, &val2, &r, color);
         cJSON *node = cJSON_CreateObject();
         cJSON_AddNumberToObject(node, "category", category);
@@ -83,6 +101,12 @@ void loadNetworkData(const char *fn1, const char *fn2, const char *fn3) {
     printf("%s", jsonString);
     cJSON_Delete(root);
     free(jsonString);
+}
+
+char *toLowerCase(char *str) {
+    for (int i = 0; str[i]; i++)
+        str[i] = tolower((unsigned char)str[i]);
+    return str;
 }
 
 void handlePreflight() {
@@ -116,33 +140,37 @@ void handleRequest() {
         free(input);
         return;
     }
-
     cJSON *json = cJSON_Parse(input);
     if (json == NULL) {
         fprintf(stderr, "Invalid JSON: %s", input);
         free(input);
         return;
     }
+    getRequestJson(json, "./data/uid.txt", "./data/doc.txt", "./data/wakachi.txt");
+
+    // 検索文書数
+    char *searchNum = option.searchNum;
+
+    // グラフ構築方法
+    char upperGraphName[100], lowerGraphName[100];
+    snprintf(upperGraphName, sizeof(upperGraphName), "%s", option.graph);
+    snprintf(lowerGraphName, sizeof(lowerGraphName), "%s", toLowerCase(option.graph));
 
     // モジュールの引数
-    char *mkwidArgs[] = {"./data/copy_wakachi.txt", "./data/wid.txt"};
-    char *mklblArgs[] = {"./data/wid.txt", "./data/copy_wakachi.txt", "./data/lbl.txt"};
-    char *nnsk5Args[] = {"./data/lbl.txt", "./data/copy_uid.txt", "./data/wid.txt", "./data/copy_doc.txt", Dn, Dh, "./result/uidk.txt", "./result/lblk.txt"};
-    char *mstArgs  [] = {"./result/lblk.txt", "./result/mst.txt"};
-    char *hmlArgs  [] = {"./result/lblk.txt", "./result/mst.txt", "1", "./result/hml.txt"};
-    char *knnArgs  [] = {"./result/lbl.txt", "./result/knn.txt"};
-    char *kkArgs   [] = {"./result/hml.txt", "./result/uidk.txt", "./result/kkedge.txt", "./result/kknode.txt", "./result/kkcategory.txt"};
+    char kkArgs1[20]; snprintf(kkArgs1, sizeof(kkArgs1), "./result/%s.txt", lowerGraphName); // 選択されたファイルに応じてロードファイルを変更.
+    const char *mkwidArgs[] = {"./data/copy_wakachi.txt", "./data/wid.txt"};
+    const char *mklblArgs[] = {"./data/wid.txt", "./data/copy_wakachi.txt", "./data/lbl.txt"};
+    const char *nnsk5Args[] = {"./data/lbl.txt", "./data/copy_uid.txt", "./data/wid.txt", "./data/copy_doc.txt", Dn, searchNum, "./result/uidk.txt", "./result/lblk.txt"};
+    const char *mstArgs  [] = {"./result/lblk.txt", "./result/mst.txt"};
+    const char *hmlArgs  [] = {"./result/lblk.txt", "./result/mst.txt", "1", "./result/hml.txt"};
+    const char *knnArgs  [] = {"./result/lblk.txt", "./result/knn.txt"};
+    const char *kkArgs   [] = {kkArgs1, "./result/uidk.txt", "./result/kkedge.txt", "./result/kknode.txt", "./result/kkcategory.txt"};
 
     // モジュールを実行
-    getRequestJson(json, "./data/uid.txt", "./data/doc.txt", "./data/wakachi.txt");
-    mklbl(mklblArgs);
-    nnsk5(nnsk5Args);
-    mst(mstArgs);
-    hml(hmlArgs);
-    //knn(knnArgs);
-    kk(kkArgs);
-    loadNetworkData("./result/kkedge.txt", "./result/kknode.txt", "./result/kkcategory.txt");
-
+    preprocess(mklblArgs, nnsk5Args);
+    generateGraph(mstArgs, knnArgs, hmlArgs, upperGraphName);
+    generateNetwork(kkArgs, kkArgs, kkArgs, kkArgs, *option.network);
+    loadNetworkData("./result/kkedge.txt", "./result/kknode.txt", "./result/kkcategory.txt", searchNum);
     cJSON_Delete(json);
     free(input);
 }

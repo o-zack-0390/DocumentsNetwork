@@ -8,7 +8,7 @@ double **nnskMatX, **nnskMatY, *nnskVecW, *nnskVecZ;
 
 
 /*lbl.txtの内容を記録する*/
-void nnskReadValue(char *fn1)
+void nnskReadValue(const char *fn1)
 {
 	FILE   *fp;
 	int    i, j, k;
@@ -46,7 +46,7 @@ void nnskReadValue(char *fn1)
 
 
 /*uid.txtの内容を読み込む*/
-void nnskReadName(char *fn1)
+void nnskReadName(const char *fn1)
 {
 	FILE	*fp;
 	int		c, i, j, k;
@@ -93,7 +93,7 @@ void nnskReadName(char *fn1)
 
 
 /* 単語を記録する関数 */
-void nnskReadWord(char *fn1)
+void nnskReadWord(const char *fn1)
 {
 	FILE	*fp;
 	int		c, i, j, k;
@@ -125,7 +125,7 @@ void nnskReadWord(char *fn1)
 
 
 /* 文章を記録する関数 */
-void nnskReadDoc(char *fn1)
+void nnskReadDoc(const char *fn1)
 {
 	FILE	*fp;
 	int		c, i, j, k;
@@ -331,7 +331,7 @@ void nnskCalValue(int i)
 }
 
 
-void nnskPrintValue(char *fn1, char *fn2)
+void nnskPrintValue(const char *fn1, const char *fn2)
 {
 	FILE	*fp1;
 	int		h, i, j, k;
@@ -378,18 +378,19 @@ void nnskPrintValue(char *fn1, char *fn2)
 }
 
 
-int nnsk5(char **argv)
+int nnsk5(const char **argv)
 {
 	int		i; 
 	nnskReadValue(argv[0]);	//引数はlbl.txt
 	nnskReadName(argv[1]); 	//引数はuid.txt
 	nnskReadWord(argv[2]); 	//引数はwid.txt
 	nnskReadDoc(argv[3]); 	//引数はdoc.txt
-	nnskInitData(); 
-	nnskCalTFIDF();          
-	nnskCalInverted(); 
-	i = atoi(argv[4]);			
-	nnskK = atoi(argv[5]);			
+	nnskInitData();
+	nnskCalTFIDF();
+	nnskCalInverted();
+	i = atoi(argv[4]);
+	nnskK = atoi(argv[5]);
+	fprintf(stderr, "num = %d\n", nnskK);
 	nnskCalValue(i-1); 
 	nnskPrintValue(argv[6], argv[7]);  // uid0011k100.txt lbl0011k100.txt
 	return 0;

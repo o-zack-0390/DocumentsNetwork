@@ -1,1 +1,1 @@
-void	mklbl(char **argv);
+void	mklbl(const char **argv);

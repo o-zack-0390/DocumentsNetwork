@@ -5,8 +5,8 @@
 int		knnDm, knnDn, *knnVecU, **knnMatU, *knnVecV, *knnVecA, **knnMatA, *knnVecB, **knnMatB, *knnVecG, *knnVecC, **knnMatD, *knnVecT;
 double	**knnMatX, **knnMatY, *knnVecW, **knnMatZ;
 
-/* lbl3000k100.txt をロード */
-void knnReadValue(char *fn1)
+/* lbl.txt をロード */
+void knnReadValue(const char *fn1)
 {
 	/*
 		knnDm               : 検索文書数
@@ -299,7 +299,7 @@ void knnCalValue()
 
 
 /* knn3000k100.txt に各ノード間の繋がりを示す隣接行列を出力 */
-void knnPrintValue(char *fn1)
+void knnPrintValue(const char *fn1)
 {
 	/*
 		h       : ノードの高さ
@@ -332,7 +332,7 @@ void knnPrintValue(char *fn1)
 }
 
 
-int	knn(char **argv)
+int	knn(const char **argv)
 {
 	knnReadValue(argv[0]);
 	knnInitValue(); 

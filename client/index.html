@@ -84,13 +84,92 @@
 
         <!-- mapping box-form -->
         <template id="template-form">
+            <!-- file uploader -->
             <form class="ui form" onsubmit="handleFormSubmit(event)">
                 <div class="field">
                     <input type="file" id="template-invisible-upload" class="ui invisible file input">
                     <label for="template-invisible-upload" class="ui olive icon button">
                         <i class="file icon"></i>
-                        Upload query document
+                        Upload query document !
                     </label>
+                </div>
+                <!-- network selector -->
+                <div class="inline fields">
+                    <label for="network-selector">Visual:</label>
+                    <div class="field">
+                        <div class="ui radio checkbox">
+                            <input id="network-selector-1" type="radio" name="visual" value="SE" tabindex="0" class="hidden">
+                            <label for="network-selector-1">スペクトラル法</label>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <div class="ui radio checkbox">
+                            <input id="network-selector-2" type="radio" name="visual" value="MDS" tabindex="0" class="hidden">
+                            <label for="network-selector-2">多次元尺度法</label>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <div class="ui radio checkbox">
+                            <input id="network-selector-3" type="radio" name="visual" value="CE" tabindex="0" class="hidden">
+                            <label for="network-selector-3">クロスエントロピー法</label>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <div class="ui radio checkbox checked">
+                            <input id="network-selector-4" type="radio" name="visual" value="KK" checked="" tabindex="0" class="hidden">
+                            <label for="network-selector-4">ばねモデル法</label>
+                        </div>
+                    </div>
+                </div>
+                <!-- graph selector -->
+                <div class="inline fields">
+                    <label for="graph-selector">Graph:</label>
+                    <div class="field">
+                        <div class="ui radio checkbox">
+                            <input id="graph-selector-1" type="radio" name="graph" value="MST" tabindex="0" class="hidden">
+                            <label for="graph-selector-1">最小全域法</label>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <div class="ui radio checkbox">
+                            <input id="graph-selector-2" type="radio" name="graph" value="KNN" tabindex="0" class="hidden">
+                            <label for="graph-selector-2">K最近傍法</label>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <div class="ui radio checkbox checked">
+                            <input id="graph-selector-3" type="radio" name="graph" value="HML" checked="" tabindex="0" class="hidden">
+                            <label for="graph-selector-3">MST-hML法</label>
+                        </div>
+                    </div>
+                </div>
+                <!-- number of searches selector -->
+                <div class="inline fields">
+                    <label for="k-selector">Search:</label>
+                    <div class="field">
+                        <div class="ui radio checkbox">
+                            <input id="k-selector-1" type="radio" name="num-k" value="50" tabindex="0" class="hidden">
+                            <label for="k-selector-1">50件</label>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <div class="ui radio checkbox checked">
+                            <input id="k-selector-2" type="radio" name="num-k" value="100" checked="" tabindex="0" class="hidden">
+                            <label for="k-selector-2">100件</label>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <div class="ui radio checkbox">
+                            <input id="k-selector-3" type="radio" name="num-k" value="150" tabindex="0" class="hidden">
+                            <label for="k-selector-3">150件</label>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <div class="ui radio checkbox">
+                            <input id="k-selector-4" type="radio" name="num-k" value="200" tabindex="0" class="hidden">
+                            <label for="k-selector-4">200件</label>
+                    </div>
+                    </div>
                 </div>
                 <button class="ui primary button" type="submit">Submit</button>
             </form>
@@ -162,6 +241,9 @@
             // 文書データ
             const documents = [];
 
+            // ネットワーク生成時のオプション
+            let networkOption = null;
+
             // ボックス id
             const boxLoaderId         = "#box-loader";
             const boxLoadedDocumentId = "#box-loaded-document";
@@ -187,10 +269,19 @@
                 // バックエンド側からデータを取得
                 try {
                     const response = await fetch(pathKkData, {
-                        method : "POST",
-                        mode   : "cors",
-                        headers: { "Content-Type": "text/plain" },
-                        body   : `{\"name\":\"${uploadDocument.name}\",\"normalText\":\"${uploadDocument.normalText}\",\"wakachiText\":\"${uploadDocument.wakachiText}\"}`,
+                        method: "POST",
+                        mode: "cors",
+                        headers: {
+                            "Content-Type": "text/plain" 
+                        },
+                        body: JSON.stringify({
+                            name: uploadDocument.name,
+                            normalText: uploadDocument.normalText,
+                            wakachiText: uploadDocument.wakachiText,
+                            networkType: networkOption.visual,
+                            graphType: networkOption.graph,
+                            searchNum: networkOption.search
+                        }),
                     })
                     .then(response => response.json())
                     .then(data => {
@@ -206,7 +297,7 @@
             function generateComponents(knnDatas)
             {
                 generateDivider();
-                generateDocumentForm();
+                generateDocumentForm("visible");
                 generateEdges(knnDatas.edges);
                 generateNodes(knnDatas.nodes);
                 generateCategories(knnDatas.nodes); // ノードの要素にカテゴリー情報が存在する
@@ -425,13 +516,20 @@
             }
 
             /* フォームの生成関数 */
-            function generateDocumentForm()
+            function generateDocumentForm(visual)
             {
-                const templateForm = document.querySelector(templateFormId);
-                const cloneForm    = document.importNode(templateForm.content, true);
-                const boxForm      = document.querySelector(boxFormId);
-                boxForm.innerHTML  = '';
-                boxForm.appendChild(cloneForm);
+                // フォームの非表示設定を解除
+                if(visual === "visible")
+                    document.getElementById("box-form").style.visibility = visual;
+                
+                // フォームを生成
+                else{
+                    const templateForm = document.querySelector(templateFormId);
+                    const cloneForm    = document.importNode(templateForm.content, true);
+                    const boxForm      = document.querySelector(boxFormId);
+                    boxForm.innerHTML  = '';
+                    boxForm.appendChild(cloneForm);
+                }
             }
 
             /* クエリ文書ロード画面の生成関数 */
@@ -495,8 +593,8 @@
             /* フォームの削除関数 */
             function clearForm()
             {
-                const boxForm = document.querySelector(boxFormId);
-                boxForm.innerHTML = '';
+                // 選択項目は履歴に残したいため削除ではなく非表示にする
+                document.querySelector(boxFormId).style.visibility = "hidden";
             }
 
             /* ローダーの削除関数 */
@@ -546,13 +644,17 @@
                 // リダイレクトを無効化
                 event.preventDefault();
 
+                // オプション設定を取得
+                networkOption = {
+                    visual : document.querySelector('input[name="visual"]:checked').value,
+                    graph  : document.querySelector('input[name="graph"]:checked').value,
+                    search : document.querySelector('input[name="num-k"]:checked').value
+                }
+
+                // 文書を取得
                 const templateInvisibleUpload = document.querySelector('#template-invisible-upload');
                 const fileContent = templateInvisibleUpload.files[0];
-
-                if (!fileContent) {
-                    alert('文書ファイルを選択してください。');
-                    return;
-                }
+                if (!fileContent) { alert('文書ファイルを選択してください。'); return; }
 
                 try
                 {

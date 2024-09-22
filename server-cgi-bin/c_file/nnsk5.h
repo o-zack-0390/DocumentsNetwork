@@ -1,1 +1,1 @@
-int nnsk5(char **argv);
+int nnsk5(const char **argv);

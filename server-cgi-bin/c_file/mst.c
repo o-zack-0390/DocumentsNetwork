@@ -6,8 +6,8 @@
 int		mstDm, mstDn, *mstVecU, **mstMatU, *mstVecA, **mstMatA, *mstVecB, **mstMatB, *mstVecE, *mstVecF, *mstVecS, *mstVecT;
 double	**mstMatX, **mstMatY, *mstVecW, *mstVecD, *mstVecZ;
 
-/* lbl.txt をロードする関数 */
-void mstReadValue(char *fn1)
+/* lblk.txt をロードする関数 */
+void mstReadValue(const char *fn1)
 {
 	FILE *fp;
 	int	  i, j, k, h;
@@ -208,7 +208,7 @@ void mstCalMST()
 }
 
 
-void mstPrintValue(char *fn1)
+void mstPrintValue(const char *fn1)
 {
 	FILE	*fp;
 	int		i, j, k, u, v;
@@ -257,9 +257,10 @@ void mstPrintValue(char *fn1)
 }
 
 
-int	mst(char **argv)
+int	mst(const char **argv)
 {
-	mstReadValue(argv[0]); // lbl.txt
+	fprintf(stderr, "Start\n");
+	mstReadValue(argv[0]); // lblk.txt
 	mstInitValue();
 	mstCalMST();
 	mstPrintValue(argv[1]);
