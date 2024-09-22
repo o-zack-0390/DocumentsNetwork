@@ -259,7 +259,6 @@ void mstPrintValue(const char *fn1)
 
 int	mst(const char **argv)
 {
-	fprintf(stderr, "Start\n");
 	mstReadValue(argv[0]); // lblk.txt
 	mstInitValue();
 	mstCalMST();

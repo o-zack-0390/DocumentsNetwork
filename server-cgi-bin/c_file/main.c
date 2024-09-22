@@ -157,20 +157,20 @@ void handleRequest() {
     snprintf(lowerGraphName, sizeof(lowerGraphName), "%s", toLowerCase(option.graph));
 
     // モジュールの引数
-    char kkArgs1[20]; snprintf(kkArgs1, sizeof(kkArgs1), "./result/%s.txt", lowerGraphName); // 選択されたファイルに応じてロードファイルを変更.
+    char args1[20]; snprintf(args1, sizeof(args1), "./result/%s.txt", lowerGraphName); // 選択されたファイルに応じてロードファイルを変更.
     const char *mkwidArgs[] = {"./data/copy_wakachi.txt", "./data/wid.txt"};
     const char *mklblArgs[] = {"./data/wid.txt", "./data/copy_wakachi.txt", "./data/lbl.txt"};
     const char *nnsk5Args[] = {"./data/lbl.txt", "./data/copy_uid.txt", "./data/wid.txt", "./data/copy_doc.txt", Dn, searchNum, "./result/uidk.txt", "./result/lblk.txt"};
     const char *mstArgs  [] = {"./result/lblk.txt", "./result/mst.txt"};
     const char *hmlArgs  [] = {"./result/lblk.txt", "./result/mst.txt", "1", "./result/hml.txt"};
     const char *knnArgs  [] = {"./result/lblk.txt", "./result/knn.txt"};
-    const char *kkArgs   [] = {kkArgs1, "./result/uidk.txt", "./result/kkedge.txt", "./result/kknode.txt", "./result/kkcategory.txt"};
+    const char *netArgs  [] = {args1, "./result/uidk.txt", "./result/edge.txt", "./result/node.txt", "./result/category.txt"};
 
     // モジュールを実行
     preprocess(mklblArgs, nnsk5Args);
     generateGraph(mstArgs, knnArgs, hmlArgs, upperGraphName);
-    generateNetwork(kkArgs, kkArgs, kkArgs, kkArgs, *option.network);
-    loadNetworkData("./result/kkedge.txt", "./result/kknode.txt", "./result/kkcategory.txt", searchNum);
+    generateNetwork(netArgs, option.network);
+    loadNetworkData("./result/edge.txt", "./result/node.txt", "./result/category.txt", searchNum);
     cJSON_Delete(json);
     free(input);
 }

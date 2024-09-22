@@ -10,17 +10,8 @@ void    generateGraph(
     const char **hmlArgs,
     const char *selectedGraph
 ){
-    if (strcmp(selectedGraph, "MST") == 0) {
-        mst(mstArgs);
-    } 
-    else if (strcmp(selectedGraph, "KNN") == 0) {
-        knn(knnArgs);
-    } 
-    else if (strcmp(selectedGraph, "HML") == 0) {
-        mst(mstArgs);
-        hml(hmlArgs);
-    } 
-    else {
-        knn(knnArgs);
-    }
+    if      (strcmp(selectedGraph, "MST") == 0)  mst(mstArgs);
+    else if (strcmp(selectedGraph, "KNN") == 0)  knn(knnArgs);
+    else if (strcmp(selectedGraph, "HML") == 0) {mst(mstArgs); hml(hmlArgs);}
+    else                                         knn(knnArgs);
 }

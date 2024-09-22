@@ -219,21 +219,11 @@ void kkLLsolve(double **LL, double *B, double *X, int dim)//kkMatA, kkMatG[i], k
 }
 
 
-void kkPrintValue(const char *fn1, const char *fn2)
+void kkPrintValue(const char *fn1, const char *fn2, const char **nodeColor)
 {
 	FILE	*fp;
 	int		i, j, k, x = 1600, y = 700;
 	double	v, w;
-	static char *name[64] = {
-		"#FF0000", "#00FF00", "#0000FF", "#FFFF00", "#FF00FF", "#00FFFF", "#800000", "#008000", 
-		"#000080", "#808000", "#800080", "#008080", "#C0C0C0", "#808080", "#FFA500", "#A52A2A", 
-		"#8B4513", "#FFD700", "#DAA520", "#B8860B", "#CD853F", "#D2691E", "#FF6347", "#FF4500", 
-		"#FF1493", "#FF69B4", "#FFB6C1", "#FF8C00", "#ADFF2F", "#7FFF00", "#32CD32", "#00FA9A", 
-		"#00FF7F", "#7FFFD4", "#40E0D0", "#4682B4", "#5F9EA0", "#6495ED", "#1E90FF", "#4169E1", 
-		"#0000CD", "#8A2BE2", "#9932CC", "#BA55D3", "#9370DB", "#4B0082", "#9400D3", "#FF00FF", 
-		"#EE82EE", "#DDA0DD", "#BC8F8F", "#F08080", "#FA8072", "#E9967A", "#FFA07A", "#FF4500", 
-		"#DC143C", "#B22222", "#8B0000", "#CD5C5C", "#E0FFFF", "#F5FFFA", "#F0FFF0", "#FAFAD2"
-	};
 	
 //	ノードの座標の最大値と最小値(横軸)を求める
 	for(i = 0; i < kkDm; i++)
@@ -284,11 +274,9 @@ void kkPrintValue(const char *fn1, const char *fn2)
 	
 //	ノードの座標を生成
 	fp = fopen(fn2, "w");
-	fprintf(fp, "%d %s %f %f 12 %s\n", kkVecC[0], kkMatF[0], kkMatW[0][0], kkMatW[0][1], name[(kkVecC[0]-1)%64]); 
+	fprintf(fp, "%d %s %f %f 12 %s\n", kkVecC[0], kkMatF[0], kkMatW[0][0], kkMatW[0][1], nodeColor[(kkVecC[0]-1)%64]); 
 	for(i = 1; i < kkDm; i++)
-	{
-		fprintf(fp, "%d %s %f %f 6 %s\n", kkVecC[i], kkMatF[i], kkMatW[i][0], kkMatW[i][1], name[(kkVecC[i]-1)%64]);
-	}
+		fprintf(fp, "%d %s %f %f 6 %s\n", kkVecC[i], kkMatF[i], kkMatW[i][0], kkMatW[i][1], nodeColor[(kkVecC[i]-1)%65]);
 	fclose(fp);
 }
 
@@ -648,7 +636,7 @@ int	kkUpdateWeight(double *max)
 }
 
 
-int kk(const char **argv)
+int kk(const char **argv, const char** commonNodeColor)
 {
 	char   name[256];
     int    i, j, k, m;
@@ -684,7 +672,7 @@ int kk(const char **argv)
 	}
 	
 	kkValE[0] = kkCalValue();
-	kkPrintValue(argv[2], argv[3]);
+	kkPrintValue(argv[2], argv[3], commonNodeColor);
 	
 	return 0;
 }
