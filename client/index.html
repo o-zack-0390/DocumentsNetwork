@@ -311,7 +311,7 @@
             const generateQueryDocumentDetail = (docTitle, docText) =>
             {
                 // ブロック id
-                const templateQueryColumn     = "#template-query-column";
+                const templateQueryColumnId   = "#template-query-column";
                 const templateQueryDocumentId = "#template-query-document";
 
                 // タイトルと内容を挿入するテンプレートを参照
@@ -325,8 +325,8 @@
                 // 文書内容を設定
                 cloneQueryDocument.querySelector("a").innerHTML = docTitle;
                 cloneQueryDocument.querySelector("p").innerHTML = docText;
-                cloneDocumentDetail.querySelector(templateQueryColumn).innerHTML = '';
-                cloneDocumentDetail.querySelector(templateQueryColumn).appendChild(cloneQueryDocument);
+                cloneDocumentDetail.querySelector(templateQueryColumnId).innerHTML = '';
+                cloneDocumentDetail.querySelector(templateQueryColumnId).appendChild(cloneQueryDocument);
 
                 // ボックスに挿入
                 const boxDocumentDetail = document.querySelector(boxDocumentDetailId);
@@ -338,7 +338,7 @@
             const generateSimilarDocumentDetail = (docName) =>
             {
                 // ブロック id
-                const templateSimilarColumn     = "#template-similar-column";
+                const templateSimilarColumnId   = "#template-similar-column";
                 const templateSimilarDocumentId = "#template-similar-document";
 
                 // タイトルと内容を挿入するテンプレートを参照
@@ -357,8 +357,8 @@
 
                 // ボックスに挿入
                 const boxDocumentDetail = document.querySelector(boxDocumentDetailId);
-                boxDocumentDetail.querySelector(templateSimilarColumn).innerHTML = '';
-                boxDocumentDetail.querySelector(templateSimilarColumn).appendChild(cloneSimilarDocument);
+                boxDocumentDetail.querySelector(templateSimilarColumnId).innerHTML = '';
+                boxDocumentDetail.querySelector(templateSimilarColumnId).appendChild(cloneSimilarDocument);
             }
 
             /* エッジの生成関数 */
