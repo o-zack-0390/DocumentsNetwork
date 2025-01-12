@@ -351,7 +351,7 @@ void nnskPrintValue(const char *fn1, const char *fn2)
 		{
 			nnskVecT[j] = i;
 			
-			if(i < 9)
+			if(i < 24)
 				i++; 
 		}
 		

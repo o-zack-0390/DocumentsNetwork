@@ -274,9 +274,10 @@ void kkPrintValue(const char *fn1, const char *fn2, const char **nodeColor)
 	
 //	ノードの座標を生成
 	fp = fopen(fn2, "w");
-	fprintf(fp, "%d %s %f %f 12 %s\n", kkVecC[0], kkMatF[0], kkMatW[0][0], kkMatW[0][1], nodeColor[(kkVecC[0]-1)%64]); 
-	for(i = 1; i < kkDm; i++)
-		fprintf(fp, "%d %s %f %f 6 %s\n", kkVecC[i], kkMatF[i], kkMatW[i][0], kkMatW[i][1], nodeColor[(kkVecC[i]-1)%65]);
+	fprintf(fp, "%d %s %f %f 12 %s\n", kkVecC[0], kkMatF[0], kkMatW[0][0], kkMatW[0][1], nodeColor[(kkVecC[0]-1)%25]); 
+	for(i = 1; i < kkDm; i++){
+		fprintf(fp, "%d %s %f %f 6 %s\n", kkVecC[i], kkMatF[i], kkMatW[i][0], kkMatW[i][1], nodeColor[(kkVecC[i]-1)%25]);
+	}
 	fclose(fp);
 }
 
