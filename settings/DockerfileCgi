@@ -14,16 +14,16 @@ RUN apt-get update && apt-get install -y \
     --fix-missing && \
     rm -rf /var/lib/apt/lists/*
 
-# ApacheのCGIモジュールを有効化
+# Apache の CGI モジュールを有効化
 RUN a2enmod cgi
 
-# Apache設定ファイルを複製
+# Apache 設定ファイルを複製
 COPY ./settings/serve-cgi-bin.conf /etc/apache2/conf-available/serve-cgi-bin.conf
 
-# 設定を有効化
+# Apache 設定ファイルを有効化
 RUN a2enconf serve-cgi-bin
 
-# cjsonライブラリのインストール
+# cjson ライブラリのインストール
 RUN mkdir -p /usr/src/cjson && \
     cd /usr/src/cjson && \
     curl -LO https://github.com/DaveGamble/cJSON/archive/v1.7.15.tar.gz && \
@@ -37,23 +37,35 @@ RUN mkdir -p /usr/src/cjson && \
     rm -rf /usr/src/cjson
 
 # バックエンドファイルを複製
-COPY ./server-cgi-bin /usr/lib/server-cgi-bin/
-
-# テキストファイルの権限を変更
-RUN chmod -R 777 /usr/lib/server-cgi-bin/data && \
-    chmod -R 777 /usr/lib/server-cgi-bin/result
+COPY ./server-cgi-bin/ /usr/lib/server-cgi-bin/
 
 # C ファイルのコンパイル
-RUN gcc -I/usr/local/include/cjson -L/usr/local/lib \
-    /usr/lib/server-cgi-bin/c_file/main.c \
-    /usr/lib/server-cgi-bin/c_file/mkwid.c \
-    /usr/lib/server-cgi-bin/c_file/mklbl.c \
-    /usr/lib/server-cgi-bin/c_file/nnsk5.c \
-    /usr/lib/server-cgi-bin/c_file/knn.c \
-    /usr/lib/server-cgi-bin/c_file/kk.c \
-    -o /usr/lib/server-cgi-bin/c_file/main.cgi -lcjson -lm && \
-    chmod +x /usr/lib/server-cgi-bin/c_file/main.cgi && \
-    rm /usr/lib/server-cgi-bin/c_file/main.c
+WORKDIR /usr/lib/server-cgi-bin/c_file
+RUN gcc main.c && \
+    copyFile.c && \
+    mkwid.c && \
+    mklbl.c && \
+    nnsk5.c && \
+    mst.c && \
+    hml.c && \
+    knn.c && \
+    se.c && \
+    mds.c && \
+    ce.c && \
+    kk.c && \
+    cJSON.c && \
+    preprocess.c && \
+    generateGraph.c && \
+    generateNetwork.c && \
+    -o main -lm
+
+# main.exe を main.cgi に変換して server-cgi-bin ディレクトリに配置
+RUN mv main /usr/lib/server-cgi-bin/main.cgi
+
+# ファイルの権限を変更
+RUN chmod -R 777 /usr/lib/server-cgi-bin/data && \
+    chmod -R 777 /usr/lib/server-cgi-bin/result && \
+    chmod +x /usr/lib/server-cgi-bin/main.cgi
 
 # ポート 80 を公開
 EXPOSE 80
