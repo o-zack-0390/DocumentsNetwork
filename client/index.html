@@ -5,12 +5,12 @@
 <!-- ==== Begin Header ==== -->
     <head>
         <meta charset="UTF-8">
-        <title>k-saito-brousing</title>
+        <title>k-saito-browsing</title>
         <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.3/dist/jquery.min.js"></script>
         <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/fomantic-ui@2.9.2/dist/semantic.min.css">
 <!-- ==== Begin Style ==== -->
         <style>
-            .container {
+            .container-common {
                 width : 100%;
                 height: 100%;
                 padding: 0px 10px;
@@ -37,7 +37,7 @@
 <!-- ==== Begin Body ==== -->
     <body>
 <!-- ==== Begin Box ==== -->
-        <main class="container">
+        <main class="container-common">
 
             <!-- loaded document -->
             <section id="box-loaded-document"></section>
@@ -202,7 +202,7 @@
             <svg
                 xmlns="http://www.w3.org/2000/svg"
                 xmlns:xlink="http://www.w3.org/1999/xlink"
-                class="container"
+                class="container-common"
             >
             </svg>
         </template>
@@ -244,6 +244,9 @@
 
             // 文書データ
             const documents = [];
+
+            // カテゴリーデータ
+            let categories = [];
 
             // ネットワーク生成時のオプション
             let networkOption = null;
@@ -302,9 +305,9 @@
             {
                 generateDivider();
                 generateDocumentForm("visible");
+                generateCategories(knnDatas.nodes); // ノードの要素にカテゴリー情報が存在する
                 generateEdges(knnDatas.edges);
                 generateNodes(knnDatas.nodes);
-                generateCategories(knnDatas.nodes); // ノードの要素にカテゴリー情報が存在する
             }
 
             /* クエリ文書の内容を DOM に挿入するメソッド */
@@ -359,6 +362,16 @@
                 const boxDocumentDetail = document.querySelector(boxDocumentDetailId);
                 boxDocumentDetail.querySelector(templateSimilarColumnId).innerHTML = '';
                 boxDocumentDetail.querySelector(templateSimilarColumnId).appendChild(cloneSimilarDocument);
+            }
+
+            /* 文書内容に出現する説明語を配色する関数 */
+            function highlightWord(docText, categories) {
+                categories.sort((a, b) => {return Number(b.keyword.length) - Number(a.keyword.length)});
+                for(let category of categories) {
+                    const regex = new RegExp(`(${category.keyword})`, "gi"); // 大文字小文字を区別しない
+                    docText = docText.replace(regex, `<span style="background-color: ${category.color}; padding: 2px 4px; border-radius: 4px;">$1</span>`);
+                }
+                return docText;
             }
 
             /* エッジの生成関数 */
@@ -422,7 +435,7 @@
                         name    : docName,
                         keyword : docKeyword,
                         category: docId,
-                        text    : docText
+                        text    : highlightWord(docText, categories)
                     });
 
                     // <a> タグを複製して属性を追加
@@ -455,7 +468,7 @@
                 // 文書詳細画面にクエリ文書を追加
                 generateQueryDocumentDetail(
                     `${attributeNodes[0].keyword} ${attributeNodes[0].id} ${attributeNodes[0].fileName}`,
-                    attributeNodes[0].title
+                    highlightWord(attributeNodes[0].title, categories)
                 );
 
                 // ボックスにノードを追加
@@ -485,20 +498,21 @@
                 }
 
                 // カテゴリーデータの重複を削除
-                const categories = Array.from(new Set(attributeCategories.map((attributeCategory) => attributeCategory.keyword)))
-                                        .map((keyword) => {
-                                            const duplicatedCategories = attributeCategories.filter((attributeCategory) => attributeCategory.keyword === keyword);
-                                            const category = duplicatedCategories[0];
-                                            return {
-                                                keyword: category.keyword,
-                                                total: Number(duplicatedCategories.length),
-                                                color: category.color
-                                            };})
-                                        .filter(category => category.total >= 3); // totalが３以上の要素のみ残す
+                categories = Array
+                                .from(new Set(attributeCategories.map((attributeCategory) => attributeCategory.keyword)))
+                                .map((keyword) => {
+                                    const duplicatedCategories = attributeCategories.filter((attributeCategory) => attributeCategory.keyword === keyword);
+                                    const category = duplicatedCategories[0];
+                                    return {
+                                        keyword: category.keyword,
+                                        total: Number(duplicatedCategories.length),
+                                        color: category.color
+                                    }})
+                                .sort((a, b) => {return Number(b.total) - Number(a.total)});
 
                 // ボックスに降順ソートしたカテゴリーを追加
-                categories.sort((a, b) => {return Number(b.total) - Number(a.total)});
-                categories.forEach(category => {
+                const printCategories = categories.filter(category => category.total >= 3); // totalが３以上の要素のみ残す
+                printCategories.forEach(category => {
                     addCategory(category);
                 });
             }
