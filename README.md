@@ -13,5 +13,5 @@
   <img width="852" alt="DocumentsNetwork Screenshot" src="https://github.com/user-attachments/assets/90f927b4-236b-4c8e-836f-0d89f81fcbb8">
 </p>
 
-## 📚 参考文献  
-🔗 [解説記事](https://or-expert.com/?p=3841)  
+## 📚 解説記事
+🔗 [類似文書を検索してネットワーク図を生成する](https://or-expert.com/?p=3841)  
