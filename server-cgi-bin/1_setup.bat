@@ -76,8 +76,12 @@ if not exist Apache24\bin\httpd.exe (
     @REM コンパイルしたCGIをApacheのサーバーに移動
     move main.cgi Apache24\cgi-bin\
 
-    @REM dataディレクトリにあるドキュメントをApacheのサーバーにコピー
+    @REM Apacheのサーバーのcgi-binにdataとresultのディレクトリを作成
+    @REM 重要：C言語のプログラムの仕様上、mkdirしないとエラーになります
     mkdir Apache24\cgi-bin\data
+    mkdir Apache24\cgi-bin\result
+
+    @REM dataディレクトリにあるドキュメントをApacheのサーバーにコピー
     copy data\ Apache24\cgi-bin\data
 
     echo Setup completed successfully!
