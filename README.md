@@ -37,7 +37,7 @@ cd DocumentsNetwork
 ```  
   
 ### [2]：`server-cgi-bin/data`に検索対象の文章データを配置
-`server-cgi-bin/data`に、検索対象の文章データを加工した後に手動で配置してください。ファイル名は必ず下記のリストと一致。  
+`server-cgi-bin/data`に、検索対象の文章データを加工した後に手動で配置してください。ファイル名は必ず下記のリストと一致させてください。  
 - `doc.txt`
 - `lbl.txt`
 - `uid.txt`
@@ -45,14 +45,20 @@ cd DocumentsNetwork
 - `wid.txt`
   
 ### [3]：バッチファイルを実行してApacheサーバーを構築＆起動
-`server-cgi-bin/1_setup.bat`を実行すると自動でApacheサーバーが構築されます。`server-cgi-bin/data`にあるファイルを生成される`Apache24`ディレクトリに全てコピーします。
+server-cgi-binのディレクトリに入ってください。
 ```
-server-cgi-bin\1_setup.bat
+cd server-cgi-bin
+```
+`server-cgi-bin/1_setup.bat`を実行すると、Apacheサーバーを自動構築します。構築時に`server-cgi-bin/data`に配置したファイルを`Apache24/cgi-bin/data`に全てコピーします。
+```
+1_setup.bat
 ```
 `server-cgi-bin/2_run.bat`を実行すると、構築したApacheサーバーを起動します。  
 ```
-server-cgi-bin\2_run.bat
+2_run.bat
 ```  
+
+補足：`server-cgi-bin/1_setup.bat`と`server-cgi-bin/2_run.bat`は、エクスプローラー上からダブルクリックで実行することもできます。
   
 ### [4]：クライアントとMecabのDockerコンテナを起動
 `settings`にあるDockerFileに基づき、クライアントとMecabのDockerコンテナを作成＆起動します。
@@ -61,7 +67,10 @@ docker compose up
 ```
 
 ### [5]：ブラウザで`http://localhost:3000/`を開きアプリを使用
-`http://localhost:3000/`にアクセスすることでアプリが使用できます。「Upload query document !」を押下して、検索クエリの文章データをアップロードした後に操作ができます。  
+[3]と[4]の項目にあるApacheサーバーとDockerコンテナを起動した状態で、`http://localhost:3000/`にアクセスするとアプリが使用できます。  
+
+「Upload query document !」を押下して、検索クエリの文章データをアップロードすると、グラフによる検索結果の可視化ができます。  
+詳細：[類似文書を検索してネットワーク図を生成する](https://or-expert.com/?p=3841)  
   
 検索クエリの文章データの形式は以下の通りです。
 - 拡張子は`.csv`。
