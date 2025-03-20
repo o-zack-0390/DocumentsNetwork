@@ -1,29 +1,30 @@
 version: "3.9"
 services:
   client:
-      container_name: client
-      build:
-        context: .
-        dockerfile: ./settings/DockerfileClient
-      volumes:
+    container_name: client
+    build:
+      context: .
+      dockerfile: ./settings/DockerfileClient
+    volumes:
       - type: bind
         source: ./client
         target: /client
-      ports:
-        - 3000:3000
-      tty: true
+    ports:
+      - 3000:3000
+    tty: true
   mecab:
-      container_name: mecab
-      build:
-        context: .
-        dockerfile: ./settings/DockerfileMeCab
-      volumes:
+    container_name: mecab
+    build:
+      context: .
+      dockerfile: ./settings/DockerfileMeCab
+    volumes:
       - type: bind
         source: ./server-mecab
         target: /server-mecab
-      ports:
-        - 4000:4000
-      tty: true
+    ports:
+      - 4000:4000
+    tty: true
+  # CGIのC言語プログラムがDockerのUbuntu環境で動作しないので使用しない
   #cgi:
   #  container_name: cgi
   #  build:
