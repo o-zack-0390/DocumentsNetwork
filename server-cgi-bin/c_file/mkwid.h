@@ -1,1 +1,1 @@
-void	mkwid(char **argv);
+void mkwid(const char **argv);
