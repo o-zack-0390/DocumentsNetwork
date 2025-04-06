@@ -159,7 +159,7 @@ void handleRequest() {
            toLowerCase(option.graph));
 
   // モジュールの引数
-  char args1[20];
+  char args1[512];  // ファイル名なので多めに
   snprintf(args1, sizeof(args1), "./result/%s.txt",
            lowerGraphName);  // 選択されたファイルに応じてロードファイルを変更.
   const char *mkwidArgs[] = {"./data/copy_wakachi.txt", "./data/wid.txt"};
