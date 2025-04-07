@@ -36,36 +36,29 @@ RUN mkdir -p /usr/src/cjson && \
     ldconfig && \
     rm -rf /usr/src/cjson
 
+# バックエンドファイルの設置ディレクトリを作成
+# 注意：事前にdataとresultのディレクトリを作成しないとmain.cgiが動作しない
+RUN mkdir -p /usr/lib/cgi-bin/data
+RUN mkdir -p /usr/lib/cgi-bin/result
+
 # バックエンドファイルを複製
-COPY ./server-cgi-bin/ /usr/lib/server-cgi-bin/
+COPY ./server-cgi-bin/ /usr/lib/cgi-bin/
 
 # C ファイルのコンパイル
-WORKDIR /usr/lib/server-cgi-bin/c_file
-RUN gcc main.c && \
-    copyFile.c && \
-    mkwid.c && \
-    mklbl.c && \
-    nnsk5.c && \
-    mst.c && \
-    hml.c && \
-    knn.c && \
-    se.c && \
-    mds.c && \
-    ce.c && \
-    kk.c && \
-    cJSON.c && \
-    preprocess.c && \
-    generateGraph.c && \
-    generateNetwork.c && \
-    -o main -lm
+WORKDIR /usr/lib/cgi-bin/c_file
+RUN gcc main.c copyFile.c mkwid.c mklbl.c nnsk5.c mst.c hml.c knn.c se.c mds.c ce.c kk.c cJSON.c preprocess.c generateGraph.c generateNetwork.c -o main -lm
 
 # main.exe を main.cgi に変換して server-cgi-bin ディレクトリに配置
-RUN mv main /usr/lib/server-cgi-bin/main.cgi
+RUN mv main /usr/lib/cgi-bin/main.cgi
+
+# CGIの動作テスト用
+RUN echo '#!/bin/bash\necho "Content-Type: text/plain"\necho ""\necho "CGI Test Successful"' > /usr/lib/cgi-bin/test.cgi && \
+    chmod 755 /usr/lib/cgi-bin/test.cgi
 
 # ファイルの権限を変更
-RUN chmod -R 777 /usr/lib/server-cgi-bin/data && \
-    chmod -R 777 /usr/lib/server-cgi-bin/result && \
-    chmod +x /usr/lib/server-cgi-bin/main.cgi
+RUN chmod -R 777 /usr/lib/cgi-bin/data && \
+    chmod -R 777 /usr/lib/cgi-bin/result && \
+    chmod +x /usr/lib/cgi-bin/main.cgi
 
 # ポート 80 を公開
 EXPOSE 80

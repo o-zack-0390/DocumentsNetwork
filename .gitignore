@@ -1,5 +1,8 @@
 # ApacheのCGI関係
-server-cgi-bin/data
+0_data/*
+!ここに文章データを配置.txt
+
+# batで作成したApacheサーバーのディレクトリを除外
 server-cgi-bin/Apache24
 
 # node_modulesを除外

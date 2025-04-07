@@ -24,11 +24,14 @@ services:
     ports:
       - 4000:4000
     tty: true
-  # CGIのC言語プログラムがDockerのUbuntu環境で動作しないので使用しない
-  #cgi:
-  #  container_name: cgi
-  #  build:
-  #    context: .
-  #    dockerfile: ./settings/DockerfileCgi
-  #  ports:
-  #    - 80:80
+  cgi:
+    container_name: cgi
+    build:
+      context: .
+      dockerfile: ./settings/DockerfileCgi
+    ports:
+      - 80:80
+    volumes:
+      # リポジトリの0_dataに配置した検索対象のテキストを、
+      # DockerのUbuntuの/usr/lib/cgi-bin/dataにマウント
+      - ./0_data:/usr/lib/cgi-bin/data

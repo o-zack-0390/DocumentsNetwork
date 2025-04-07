@@ -82,7 +82,7 @@ if not exist Apache24\bin\httpd.exe (
     mkdir Apache24\cgi-bin\result
 
     @REM dataディレクトリにあるドキュメントをApacheのサーバーにコピー
-    copy data\ Apache24\cgi-bin\data
+    copy ..\0_data\ Apache24\cgi-bin\data
 
     echo Setup completed successfully!
     pause
