@@ -1,0 +1,4 @@
+ここに三種類のファイルを配置
+・wakachi.txt
+・doc.txt
+・uid.txt
